@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="关于虚拟化技术 虚拟化是一种通过模拟计算机硬件，使一台计算机可以同时运行多个不同操作系统的技术。虚拟化极大地提高了硬件资源的利用率，同时降低了物理设备的成本和管理复杂性。  虚拟化软件的差别 qume 全虚拟化软件，特别慢但是兼容性特别好。 xen 半虚拟化软件，需要使用专门修改之后的内核，性能很高，兼容性很差。redhat在5.5的版本将xen替换成kvm kvm 全虚拟化软件，它具有硬件支持c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KVM-虚拟机管理">
+<meta property="og:url" content="https://blog.boychai.xyz/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="关于虚拟化技术 虚拟化是一种通过模拟计算机硬件，使一台计算机可以同时运行多个不同操作系统的技术。虚拟化极大地提高了硬件资源的利用率，同时降低了物理设备的成本和管理复杂性。  虚拟化软件的差别 qume 全虚拟化软件，特别慢但是兼容性特别好。 xen 半虚拟化软件，需要使用专门修改之后的内核，性能很高，兼容性很差。redhat在5.5的版本将xen替换成kvm kvm 全虚拟化软件，它具有硬件支持c">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241226152259.png">
+<meta property="article:published_time" content="2024-12-27T18:23:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.598Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="开源工具">
+<meta property="article:tag" content="kvm">
+<meta property="article:tag" content="qemu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241226152259.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/","path":"2024/12/27/KVM-虚拟机管理/","title":"KVM-虚拟机管理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>KVM-虚拟机管理 | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF"><span class="nav-number">1.</span> <span class="nav-text">关于虚拟化技术</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E5%8C%96%E8%BD%AF%E4%BB%B6%E7%9A%84%E5%B7%AE%E5%88%AB"><span class="nav-number">2.</span> <span class="nav-text">虚拟化软件的差别</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85KVM"><span class="nav-number">3.</span> <span class="nav-text">安装KVM</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%99%9A%E6%9C%BA%E7%AE%A1%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">虚机管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">4.1.</span> <span class="nav-text">创建一个虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4"><span class="nav-number">4.2.</span> <span class="nav-text">管理命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E8%99%9A%E6%9C%BA"><span class="nav-number">4.3.</span> <span class="nav-text">列出虚机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E6%9C%BA"><span class="nav-number">4.4.</span> <span class="nav-text">关机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E6%9C%BA"><span class="nav-number">4.5.</span> <span class="nav-text">开机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%BA%E5%88%B6%E5%85%B3%E6%9C%BA"><span class="nav-number">4.6.</span> <span class="nav-text">强制关机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E5%90%AF"><span class="nav-number">4.7.</span> <span class="nav-text">重启</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%87%BA%E9%85%8D%E7%BD%AE"><span class="nav-number">4.8.</span> <span class="nav-text">导出配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%96%E6%B6%88%E5%AE%9A%E4%B9%89"><span class="nav-number">4.9.</span> <span class="nav-text">取消定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E9%85%8D%E7%BD%AE"><span class="nav-number">4.10.</span> <span class="nav-text">导入配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E9%85%8D%E7%BD%AE"><span class="nav-number">4.11.</span> <span class="nav-text">修改配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%82%E8%B5%B7"><span class="nav-number">4.12.</span> <span class="nav-text">挂起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%81%A2%E5%A4%8D"><span class="nav-number">4.13.</span> <span class="nav-text">恢复</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E6%9C%BA%E8%87%AA%E5%90%AF"><span class="nav-number">4.14.</span> <span class="nav-text">开机自启</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E5%BC%80%E6%9C%BA%E8%87%AA%E5%90%AF%E4%B8%BB%E6%9C%BA"><span class="nav-number">4.15.</span> <span class="nav-text">列出所有开机自启主机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6%E5%8F%B0"><span class="nav-number">4.16.</span> <span class="nav-text">控制台</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A3%81%E7%9B%98%E7%AE%A1%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">磁盘管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E7%A3%81%E7%9B%98%E6%A0%BC%E5%BC%8F"><span class="nav-number">5.1.</span> <span class="nav-text">关于磁盘格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4-1"><span class="nav-number">5.2.</span> <span class="nav-text">管理命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A3%81%E7%9B%98%E4%BF%A1%E6%81%AF"><span class="nav-number">5.3.</span> <span class="nav-text">磁盘信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%A3%81%E7%9B%98"><span class="nav-number">5.4.</span> <span class="nav-text">创建磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E6%95%B4%E5%AE%B9%E9%87%8F"><span class="nav-number">5.5.</span> <span class="nav-text">调整容量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RAW%E8%BD%AC%E6%8D%A2QCOW2"><span class="nav-number">5.6.</span> <span class="nav-text">RAW转换QCOW2</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%8A%9F%E8%83%BD"><span class="nav-number">6.</span> <span class="nav-text">其他功能</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%AB%E7%85%A7"><span class="nav-number">6.1.</span> <span class="nav-text">快照</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%BF%AB%E7%85%A7"><span class="nav-number">6.1.1.</span> <span class="nav-text">创建快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%BF%AB%E7%85%A7"><span class="nav-number">6.1.2.</span> <span class="nav-text">查看快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%81%A2%E5%A4%8D%E5%BF%AB%E7%85%A7"><span class="nav-number">6.1.3.</span> <span class="nav-text">恢复快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E5%BF%AB%E7%85%A7"><span class="nav-number">6.1.4.</span> <span class="nav-text">删除快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">6.1.5.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%8B%E9%9A%86"><span class="nav-number">6.2.</span> <span class="nav-text">克隆</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E5%85%8B%E9%9A%86"><span class="nav-number">6.2.1.</span> <span class="nav-text">完整克隆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E5%85%8B%E9%9A%86"><span class="nav-number">6.2.2.</span> <span class="nav-text">链接克隆</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C"><span class="nav-number">6.3.</span> <span class="nav-text">网络</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A1%A5%E6%8E%A5%E7%BD%91%E5%8D%A1"><span class="nav-number">6.3.1.</span> <span class="nav-text">桥接网卡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%96%E6%B6%88%E6%A1%A5%E6%8E%A5"><span class="nav-number">6.3.2.</span> <span class="nav-text">取消桥接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%99%9A%E6%9C%BA%E6%8C%87%E5%AE%9A%E7%BD%91%E5%8D%A1"><span class="nav-number">6.3.3.</span> <span class="nav-text">创建虚机指定网卡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%B2%E6%9C%89%E8%99%9A%E6%9C%BA%E6%9B%B4%E6%8D%A2%E7%BD%91%E5%8D%A1"><span class="nav-number">6.3.4.</span> <span class="nav-text">已有虚机更换网卡</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">6.3.5.</span> <span class="nav-text">注意</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EKVM%E5%88%9B%E5%BB%BA%E7%9A%84%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">7.</span> <span class="nav-text">关于KVM创建的虚拟机</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="KVM-虚拟机管理 | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          KVM-虚拟机管理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-12-27 18:23:00" itemprop="dateCreated datePublished" datetime="2024-12-27T18:23:00+00:00">2024-12-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B7%A5%E5%85%B7%E7%9B%B8%E5%85%B3/" itemprop="url" rel="index"><span itemprop="name">工具相关</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="关于虚拟化技术"><a href="#关于虚拟化技术" class="headerlink" title="关于虚拟化技术"></a>关于虚拟化技术</h1><p>虚拟化是一种通过模拟计算机硬件，使一台计算机可以同时运行多个不同操作系统的技术。虚拟化极大地提高了硬件资源的利用率，同时降低了物理设备的成本和管理复杂性。</p>
+<h1 id="虚拟化软件的差别"><a href="#虚拟化软件的差别" class="headerlink" title="虚拟化软件的差别"></a>虚拟化软件的差别</h1><p>qume 全虚拟化软件，特别慢但是兼容性特别好。<br>xen     半虚拟化软件，需要使用专门修改之后的内核，性能很高，兼容性很差。redhat在5.5的版本将xen替换成kvm<br>kvm    全虚拟化软件，它具有硬件支持cpu，内置在linux内核模块中，不需要使用专门的内核。性能好，兼容性好。<br>kvm的兼容性没有qume好，但是他比qume的性能好太多了<br>kvm的性能没有xen好，但是他比xen的兼容性好太多了</p>
+<h1 id="安装KVM"><a href="#安装KVM" class="headerlink" title="安装KVM"></a>安装KVM</h1><p>KVM全称：Kernel-based Virtual Machine<br>libvirt：因为KVM是基于内核的，linux用户是没办法直接操作内核的，这个软件包就是一个操作的工具。<br>virt-install：安装虚拟机用的。<br>qume-kvm：kvm是没有自己的虚拟磁盘技术的，所以直接兼容了qume的虚拟磁盘，这个包即兼容并优化了qume的磁盘。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install libvirt virt-install qemu-kvm -y</span><br><span class="line">systemctl <span class="built_in">enable</span> --now libvirtd</span><br></pre></td></tr></table></figure>
+<h1 id="虚机管理"><a href="#虚机管理" class="headerlink" title="虚机管理"></a>虚机管理</h1><h2 id="创建一个虚拟机"><a href="#创建一个虚拟机" class="headerlink" title="创建一个虚拟机"></a>创建一个虚拟机</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@template ~]# virt-install --virt-type kvm --os-type=linux --os-variant rhel7 --name centos7 --memory 1024 --vcpus 1 --disk /opt/centos.raw,format=raw,size=10 --cdrom /opt/CentOS-7-x86_64-Minimal-1511.iso --network network=default --graphics vnc,listen=0.0.0.0 --noautoconsole</span><br><span class="line">Starting install...</span><br><span class="line">Allocating <span class="string">&#x27;centos.raw&#x27;</span>                   |  10 GB  00:00:00</span><br><span class="line">Domain installation still <span class="keyword">in</span> progress. You can reconnect to</span><br><span class="line">the console to complete the installation process.</span><br></pre></td></tr></table></figure>
+<p>要注意的是–cdrom参数，镜像不要放在root目录下会报权限相关的问题，建议丢到一个公共的位置，例如&#x2F;opt下，然后操控的用户和用户组都是qemu<br>创建好之后可以通过vnc来连接，这里设置离连接方式是vnc，并且监听的位置是0.0.0.0<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241226152259.png" alt="VNC"></p>
+<h2 id="管理命令"><a href="#管理命令" class="headerlink" title="管理命令"></a>管理命令</h2><p>主要使用<code>virsh</code>来管理KVM虚拟机</p>
+<h2 id="列出虚机"><a href="#列出虚机" class="headerlink" title="列出虚机"></a>列出虚机</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh list</span><br></pre></td></tr></table></figure>
+<p>这条命令默认是列出所有运行的虚机，如果虚机在关闭状态则不会列出，想要列出所有状态的虚机需要添加<code>--all</code>参数</p>
+<h2 id="关机"><a href="#关机" class="headerlink" title="关机"></a>关机</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh shutdown 虚机名</span><br></pre></td></tr></table></figure>
+<p>关机的话系统必须装好，否则没用</p>
+<h2 id="开机"><a href="#开机" class="headerlink" title="开机"></a>开机</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh start 虚机名</span><br></pre></td></tr></table></figure>
+
+<h2 id="强制关机"><a href="#强制关机" class="headerlink" title="强制关机"></a>强制关机</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh destroy 虚机名</span><br></pre></td></tr></table></figure>
+<p>这相当于拔掉虚机的电源</p>
+<h2 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh reboot 虚机名</span><br></pre></td></tr></table></figure>
+
+<p>重启的话系统必须装好，否则没用</p>
+<h2 id="导出配置"><a href="#导出配置" class="headerlink" title="导出配置"></a>导出配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh dumpxml 虚机名</span><br></pre></td></tr></table></figure>
+<p>导出对应虚机的配置文件</p>
+<h2 id="取消定义"><a href="#取消定义" class="headerlink" title="取消定义"></a>取消定义</h2><p>这里是把对应的虚拟机移除kvm的管理里，相当于从kvm中删除，配置文件也会被删除，但是实际的镜像文件还是会保留。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh undefine 虚机名</span><br></pre></td></tr></table></figure>
+
+<h2 id="导入配置"><a href="#导入配置" class="headerlink" title="导入配置"></a>导入配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh define xml配置文件</span><br></pre></td></tr></table></figure>
+
+<h2 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh edit 虚机名</span><br></pre></td></tr></table></figure>
+<h2 id="挂起"><a href="#挂起" class="headerlink" title="挂起"></a>挂起</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh <span class="built_in">suspend</span> 虚机名</span><br></pre></td></tr></table></figure>
+<p>锁定当前状态</p>
+<h2 id="恢复"><a href="#恢复" class="headerlink" title="恢复"></a>恢复</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh resume 虚机名</span><br></pre></td></tr></table></figure>
+<h2 id="开机自启"><a href="#开机自启" class="headerlink" title="开机自启"></a>开机自启</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh autostart 虚机名</span><br></pre></td></tr></table></figure>
+<p>可以添加参数<code>--disable</code>来取消开机自启</p>
+<h2 id="列出所有开机自启主机"><a href="#列出所有开机自启主机" class="headerlink" title="列出所有开机自启主机"></a>列出所有开机自启主机</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh list --autostart --all</span><br></pre></td></tr></table></figure>
+<p>不加参数<code>--all</code>参数的话，只会列出开机的主机。</p>
+<h2 id="控制台"><a href="#控制台" class="headerlink" title="控制台"></a>控制台</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh console 虚机名</span><br></pre></td></tr></table></figure>
+<p>想要通过<code>console</code>直接连接控制虚机，需要提前在虚拟机中执行下面命令让其支持(执行完请重启虚机)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grubby --update-kernel=ALL --args=<span class="string">&quot;console=ttyS0,115200n8&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="磁盘管理"><a href="#磁盘管理" class="headerlink" title="磁盘管理"></a>磁盘管理</h1><h2 id="关于磁盘格式"><a href="#关于磁盘格式" class="headerlink" title="关于磁盘格式"></a>关于磁盘格式</h2><ul>
+<li>RAW：原始格式，也叫野格式，不支持快照功能，不方便传输，读写性能较好。</li>
+<li>qcow2：qcow2(copy on write)写时复制(动态占用空间)，占用空间小，支持快照，性能比raw差一点，方便传输。</li>
+</ul>
+<h2 id="管理命令-1"><a href="#管理命令-1" class="headerlink" title="管理命令"></a>管理命令</h2><p>主要使用<code>qemu-img</code>来管理KVM虚拟机</p>
+<h2 id="磁盘信息"><a href="#磁盘信息" class="headerlink" title="磁盘信息"></a>磁盘信息</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img info 虚拟磁盘</span><br></pre></td></tr></table></figure>
+<h2 id="创建磁盘"><a href="#创建磁盘" class="headerlink" title="创建磁盘"></a>创建磁盘</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 位置 大小</span><br></pre></td></tr></table></figure>
+<p>例如</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 /opt/test.qcow2 1G</span><br></pre></td></tr></table></figure>
+<p>在<code>/opt/test.qcow2</code>位置创建一个1G大小的磁盘</p>
+<h2 id="调整容量"><a href="#调整容量" class="headerlink" title="调整容量"></a>调整容量</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img resize /opt/test.qcow2 +1G</span><br></pre></td></tr></table></figure>
+<p>给test.qcow2添加1G<br>后面是容量指令，具体格式参考如下</p>
+<ul>
+<li>5G    大小调整到5G</li>
+<li>+1G 大小增加1G</li>
+<li>-1G 大小减小1G</li>
+</ul>
+<h2 id="RAW转换QCOW2"><a href="#RAW转换QCOW2" class="headerlink" title="RAW转换QCOW2"></a>RAW转换QCOW2</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img convert -f raw -O qcow2 xxx.raw xxx.qcow2</span><br></pre></td></tr></table></figure>
+<p>这个操作请在虚拟机关闭的状态下执行，执行之后会保留之前的文件然后生成新的qcow2文件。<br>然后转换之后如果想开机时使用QCOW2的镜像需要edit一下虚机的配置文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu-img convert -f raw -O qcow2 centos.raw centos.qcow2</span><br><span class="line">virsh edit centos7</span><br></pre></td></tr></table></figure>
+<p>大概在35行左右,原文如下</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">disk</span> <span class="attr">type</span>=<span class="string">&#x27;file&#x27;</span> <span class="attr">device</span>=<span class="string">&#x27;disk&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">driver</span> <span class="attr">name</span>=<span class="string">&#x27;qemu&#x27;</span> <span class="attr">type</span>=<span class="string">&#x27;raw&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">driver</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">source</span> <span class="attr">file</span>=<span class="string">&#x27;/opt/centos.raw&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">target</span> <span class="attr">dev</span>=<span class="string">&#x27;vda&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;virtio&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">address</span> <span class="attr">type</span>=<span class="string">&#x27;pci&#x27;</span> <span class="attr">domain</span>=<span class="string">&#x27;0x0000&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;0x00&#x27;</span> <span class="attr">slot</span>=<span class="string">&#x27;0x06&#x27;</span> <span class="attr">function</span>=<span class="string">&#x27;0x0&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">disk</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>修改成下面这种效果</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">disk</span> <span class="attr">type</span>=<span class="string">&#x27;file&#x27;</span> <span class="attr">device</span>=<span class="string">&#x27;disk&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">driver</span> <span class="attr">name</span>=<span class="string">&#x27;qemu&#x27;</span> <span class="attr">type</span>=<span class="string">&#x27;qcow2&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">driver</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">source</span> <span class="attr">file</span>=<span class="string">&#x27;/opt/centos.qcow2&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">target</span> <span class="attr">dev</span>=<span class="string">&#x27;vda&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;virtio&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">address</span> <span class="attr">type</span>=<span class="string">&#x27;pci&#x27;</span> <span class="attr">domain</span>=<span class="string">&#x27;0x0000&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;0x00&#x27;</span> <span class="attr">slot</span>=<span class="string">&#x27;0x06&#x27;</span> <span class="attr">function</span>=<span class="string">&#x27;0x0&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">disk</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="其他功能"><a href="#其他功能" class="headerlink" title="其他功能"></a>其他功能</h1><h2 id="快照"><a href="#快照" class="headerlink" title="快照"></a>快照</h2><h3 id="创建快照"><a href="#创建快照" class="headerlink" title="创建快照"></a>创建快照</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh snapshot-create centos7 --atomic --disk-only</span><br></pre></td></tr></table></figure>
+<p>这里我们为虚拟机 centos7 创建了一个快照,使用了 <code>--atomic</code>表示如果失败则完全回滚,<code>--disk-only</code> 表示仅对磁盘创建快照。</p>
+<h3 id="查看快照"><a href="#查看快照" class="headerlink" title="查看快照"></a>查看快照</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh snapshot-list centos7</span><br></pre></td></tr></table></figure>
+<h3 id="恢复快照"><a href="#恢复快照" class="headerlink" title="恢复快照"></a>恢复快照</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh snapshot-revert centos7 snapshot1</span><br></pre></td></tr></table></figure>
+<h3 id="删除快照"><a href="#删除快照" class="headerlink" title="删除快照"></a>删除快照</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh snapshot-delete centos7 snapshot1</span><br></pre></td></tr></table></figure>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>在创建和管理快照时,可以添加选项控制快照类型(disk-only、system-checkpoint等)、是否包含内存状态等,灵活控制快照行为。</p>
+<h2 id="克隆"><a href="#克隆" class="headerlink" title="克隆"></a>克隆</h2><h3 id="完整克隆"><a href="#完整克隆" class="headerlink" title="完整克隆"></a>完整克隆</h3><p>被克隆的主机一定要处于被挂起或者关闭的状态下<br>使用virt-clone工具</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@template opt]# virt-clone --auto-clone -o centos7 -n centos7-2</span><br><span class="line">Allocating <span class="string">&#x27;centos-clone.qcow2&#x27;</span>                      |  10 GB  00:00:09     </span><br><span class="line">Clone <span class="string">&#x27;centos7-2&#x27;</span> created successfully.</span><br></pre></td></tr></table></figure>
+<p>手动克隆</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu-img convert -f qcow2 -O qcow2 -c centos.qcow2 centos2.qcow2</span><br><span class="line">virsh dumpxml centos7 &gt; centos7-2.xml</span><br></pre></td></tr></table></figure>
+<p>编辑导出的xml,主要修改下面几个字段</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">修改 domain.name # 名字</span><br><span class="line">删除 domain.uuid # uuid</span><br><span class="line">删除 domain.devices.interface.mac # mac地址</span><br><span class="line">修改 domain.devices.disk.source-file # 虚拟磁盘文件指定为新手动复制的。</span><br></pre></td></tr></table></figure>
+<p>编辑好之后导入虚机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh define centos7-2.xml</span><br></pre></td></tr></table></figure>
+<h3 id="链接克隆"><a href="#链接克隆" class="headerlink" title="链接克隆"></a>链接克隆</h3><p>连接克隆要注意的是不能使用RAW格式的磁盘，他是不支持的。<br>创建引用磁盘</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 -b centos.qcow2 centos3.qcow2</span><br></pre></td></tr></table></figure>
+<p>此时去查看centos3.qcow2的信息如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@template opt]# qemu-img info centos3.qcow2              </span><br><span class="line">image: centos3.qcow2                                          file format: qcow2                                            virtual size: 10G (10737418240 bytes)                         disk size: 196K                                               cluster_size: 65536                                           backing file: centos.qcow2                                    </span><br><span class="line">Format specific information:                                      compat: 1.1                                                   lazy refcounts: <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>会发现这个字段<code>backing file: centos.qcow2</code><br>导出xml</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh dumpxml centos7 &gt; centos7-3.xml</span><br></pre></td></tr></table></figure>
+<p>编辑导出的xml,主要修改下面几个字段</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">修改 domain.name # 名字</span><br><span class="line">删除 domain.uuid # uuid</span><br><span class="line">删除 domain.devices.interface.mac # mac地址</span><br><span class="line">修改 domain.devices.disk.source-file # 虚拟磁盘文件指定为新手动复制的。</span><br></pre></td></tr></table></figure>
+<p>编辑好之后导入虚机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh define centos7-3.xml</span><br></pre></td></tr></table></figure>
+<h2 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h2><h3 id="桥接网卡"><a href="#桥接网卡" class="headerlink" title="桥接网卡"></a>桥接网卡</h3><p>如果想要将主机桥接到某个网络中则需要搞一个桥接网卡，可以通过下面命令进行桥接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh iface-bridge ens33 br0</span><br></pre></td></tr></table></figure>
+<p>ens33是被桥接的网卡，br0是桥接之后的网卡，桥接的过程中可能会出现很多问题，我出现的问题是断网，然后开启网卡开启失败具体可以参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_57949020/article/details/119984635">文章</a></p>
+<h3 id="取消桥接"><a href="#取消桥接" class="headerlink" title="取消桥接"></a>取消桥接</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh iface-unbridge br0</span><br></pre></td></tr></table></figure>
+<h3 id="创建虚机指定网卡"><a href="#创建虚机指定网卡" class="headerlink" title="创建虚机指定网卡"></a>创建虚机指定网卡</h3><p>参数<code>--network network=default</code>是NAT模式，全部参数可以参考下面</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virt-install --virt-type kvm --os-type=linux --os-variant rhel7 --name centos7 --memory 1024 --vcpus 1 --disk /opt/centos.raw,format=raw,size=10 --cdrom /opt/CentOS-7-x86_64-Minimal-1511.iso --network network=default --graphics vnc,listen=0.0.0.0 --noautoconsole</span><br></pre></td></tr></table></figure>
+
+<p>参数<code>--network bridge=br0</code>是桥接模式，全部参数可以参考下面</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virt-install --virt-type kvm --os-type=linux --os-variant rhel7 --name centos7 --memory 1024 --vcpus 1 --disk /opt/centos.raw,format=raw,size=10 --cdrom /opt/CentOS-7-x86_64-Minimal-1511.iso --network bridge=br0 --graphics vnc,listen=0.0.0.0 --noautoconsole</span><br></pre></td></tr></table></figure>
+<h3 id="已有虚机更换网卡"><a href="#已有虚机更换网卡" class="headerlink" title="已有虚机更换网卡"></a>已有虚机更换网卡</h3><p>通过下面命令编辑配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh edit 虚机名</span><br></pre></td></tr></table></figure>
+<p>修改<code>domain.devices.interface</code>字段，默认值如下</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">interface</span> <span class="attr">type</span>=<span class="string">&#x27;network&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">mac</span> <span class="attr">address</span>=<span class="string">&#x27;52:54:00:25:a6:67&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">mac</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">source</span> <span class="attr">network</span>=<span class="string">&#x27;default&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">model</span> <span class="attr">type</span>=<span class="string">&#x27;virtio&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">model</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">address</span> <span class="attr">type</span>=<span class="string">&#x27;pci&#x27;</span> <span class="attr">domain</span>=<span class="string">&#x27;0x0000&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;0x00&#x27;</span> <span class="attr">slot</span>=<span class="string">&#x27;0x03&#x27;</span> <span class="attr">function</span>=<span class="string">&#x27;0x0&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>修改成下面这样</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">interface</span> <span class="attr">type</span>=<span class="string">&#x27;bridge&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">mac</span> <span class="attr">address</span>=<span class="string">&#x27;52:54:00:25:a6:67&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">mac</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">source</span> <span class="attr">bridge</span>=<span class="string">&#x27;br0&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">model</span> <span class="attr">type</span>=<span class="string">&#x27;virtio&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">model</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">address</span> <span class="attr">type</span>=<span class="string">&#x27;pci&#x27;</span> <span class="attr">domain</span>=<span class="string">&#x27;0x0000&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;0x00&#x27;</span> <span class="attr">slot</span>=<span class="string">&#x27;0x03&#x27;</span> <span class="attr">function</span>=<span class="string">&#x27;0x0&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>主要是<code>interface</code>的<code>type</code>字段和<code>interface.source</code>的字段。</p>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>每次桥接和取消桥接都会永久性的修改网卡的配置文件，这个需要注意。</p>
+<h1 id="关于KVM创建的虚拟机"><a href="#关于KVM创建的虚拟机" class="headerlink" title="关于KVM创建的虚拟机"></a>关于KVM创建的虚拟机</h1><p>KVM虚拟机主要有两部分组成，一部分是磁盘文件，在创建的时候通过下面命令已经指定<br><code>--disk /opt/centos.raw,format=raw,size=10</code><br>另外一部分是配置文件，配置文件默认位置在<code>/etc/libvirt/qemu</code>中，一般采用dumpxml来导出，只要拥有xml和镜像文件就可以恢复虚机。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%BC%80%E6%BA%90%E5%B7%A5%E5%85%B7/" rel="tag"># 开源工具</a>
+              <a href="/tags/kvm/" rel="tag"># kvm</a>
+              <a href="/tags/qemu/" rel="tag"># qemu</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/12/06/Git%20Index%E6%96%87%E4%BB%B6%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="prev" title="Git Index文件数据结构">
+                  <i class="fa fa-angle-left"></i> Git Index文件数据结构
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/" rel="next" title="2024第一届Solar杯应急响应挑战赛-WriteUp">
+                  2024第一届Solar杯应急响应挑战赛-WriteUp <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

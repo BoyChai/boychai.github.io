@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="前言 参考文档：https:&#x2F;&#x2F;docs.openstack.org&#x2F;cinder&#x2F;stein&#x2F;install&#x2F; 块存储通过cinder组件对接，他也分为控制节点和计算节点的区分。  控制节点 参考文档： https:&#x2F;&#x2F;docs.openstack.org&#x2F;cinder&#x2F;stein&#x2F;install&#x2F;cinder-controller-install-rdo.html 先去创库授权，在控制节点执行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenStack-Cinder块存储-对接LVM、NFS、CEPH">
+<meta property="og:url" content="https://blog.boychai.xyz/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="前言 参考文档：https:&#x2F;&#x2F;docs.openstack.org&#x2F;cinder&#x2F;stein&#x2F;install&#x2F; 块存储通过cinder组件对接，他也分为控制节点和计算节点的区分。  控制节点 参考文档： https:&#x2F;&#x2F;docs.openstack.org&#x2F;cinder&#x2F;stein&#x2F;install&#x2F;cinder-controller-install-rdo.html 先去创库授权，在控制节点执行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105204918.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105212115.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223017.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223116.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223141.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223348.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223903.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223606.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105223638.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250111152532.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250111152605.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250111152717.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250111153536.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250111154039.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250111162947.png">
+<meta property="article:published_time" content="2025-01-11T16:05:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.599Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="开源工具">
+<meta property="article:tag" content="OpenStack">
+<meta property="article:tag" content="Stein">
+<meta property="article:tag" content="Cinder">
+<meta property="article:tag" content="LVM">
+<meta property="article:tag" content="NFS">
+<meta property="article:tag" content="CEPH">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250105204918.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/","path":"2025/01/11/OpenStack-Cinder块存储-对接LVM、NFS、CEPH/","title":"OpenStack-Cinder块存储-对接LVM、NFS、CEPH"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>OpenStack-Cinder块存储-对接LVM、NFS、CEPH | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6%E8%8A%82%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">控制节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E8%8A%82%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">存储节点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%AD%98%E5%82%A8"><span class="nav-number">4.</span> <span class="nav-text">其他存储</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%8E%A5NFS"><span class="nav-number">4.1.</span> <span class="nav-text">对接NFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%8E%A5Ceph"><span class="nav-number">4.2.</span> <span class="nav-text">对接Ceph</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="OpenStack-Cinder块存储-对接LVM、NFS、CEPH | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenStack-Cinder块存储-对接LVM、NFS、CEPH
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-11 16:05:00" itemprop="dateCreated datePublished" datetime="2025-01-11T16:05:00+00:00">2025-01-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96%E5%B9%B3%E5%8F%B0/" itemprop="url" rel="index"><span itemprop="name">虚拟化平台</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>参考文档：<a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/">https://docs.openstack.org/cinder/stein/install/</a><br>块存储通过cinder组件对接，他也分为控制节点和计算节点的区分。</p>
+<h1 id="控制节点"><a href="#控制节点" class="headerlink" title="控制节点"></a>控制节点</h1><p>参考文档： <a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/cinder-controller-install-rdo.html">https://docs.openstack.org/cinder/stein/install/cinder-controller-install-rdo.html</a><br>先去创库授权，在控制节点执行下面命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br><span class="line">CREATE DATABASE cinder;</span><br><span class="line">GRANT ALL PRIVILEGES ON cinder.* TO <span class="string">&#x27;cinder&#x27;</span>@<span class="string">&#x27;localhost&#x27;</span> \</span><br><span class="line">  IDENTIFIED BY <span class="string">&#x27;CINDER_DBPASS&#x27;</span>;</span><br><span class="line">GRANT ALL PRIVILEGES ON cinder.* TO <span class="string">&#x27;cinder&#x27;</span>@<span class="string">&#x27;%&#x27;</span> \</span><br><span class="line">  IDENTIFIED BY <span class="string">&#x27;CINDER_DBPASS&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<p>在认证组件中创建用户、授权</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./admin-openrc</span><br><span class="line">openstack user create --domain default --password CINDER_PASS cinder</span><br><span class="line">openstack role add --project service --user cinder admin</span><br></pre></td></tr></table></figure>
+<p>创建服务实体</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">openstack service create --name cinderv2 \</span><br><span class="line">  --description <span class="string">&quot;OpenStack Block Storage&quot;</span> volumev2</span><br><span class="line">openstack service create --name cinderv3 \</span><br><span class="line">  --description <span class="string">&quot;OpenStack Block Storage&quot;</span> volumev3</span><br></pre></td></tr></table></figure>
+<p>创建api访问入口</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">openstack endpoint create --region RegionOne \</span><br><span class="line">  volumev2 public http://controller:8776/v2/%\(project_id\)s</span><br><span class="line">openstack endpoint create --region RegionOne \</span><br><span class="line">  volumev2 internal http://controller:8776/v2/%\(project_id\)s</span><br><span class="line">openstack endpoint create --region RegionOne \</span><br><span class="line">  volumev2 admin http://controller:8776/v2/%\(project_id\)s</span><br><span class="line">openstack endpoint create --region RegionOne \</span><br><span class="line">  volumev3 public http://controller:8776/v3/%\(project_id\)s</span><br><span class="line">openstack endpoint create --region RegionOne \</span><br><span class="line">  volumev3 internal http://controller:8776/v3/%\(project_id\)s</span><br><span class="line">openstack endpoint create --region RegionOne \</span><br><span class="line">  volumev3 admin http://controller:8776/v3/%\(project_id\)s</span><br></pre></td></tr></table></figure>
+<p>安装软件包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y openstack-cinder</span><br></pre></td></tr></table></figure>
+<p>备份配置文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /etc/cinder/cinder.conf&#123;,.bak&#125;</span><br><span class="line">egrep -v <span class="string">&quot;^#|^$&quot;</span> /etc/cinder/cinder.conf.bak &gt; /etc/cinder/cinder.conf </span><br></pre></td></tr></table></figure>
+<p>修改<code>/etc/cinder/cinder.conf </code>文件，主要是以下内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[DEFAULT]</span><br><span class="line">my_ip = 10.0.0.11</span><br><span class="line">transport_url = rabbit://openstack:RABBIT_PASS@controller</span><br><span class="line">auth_strategy = keystone</span><br><span class="line">[database]</span><br><span class="line">connection = mysql+pymysql://cinder:CINDER_DBPASS@controller/cinder</span><br><span class="line">[keystone_authtoken]</span><br><span class="line">www_authenticate_uri = http://controller:5000</span><br><span class="line">auth_url = http://controller:5000</span><br><span class="line">memcached_servers = controller:11211</span><br><span class="line">auth_type = password</span><br><span class="line">project_domain_name = default</span><br><span class="line">user_domain_name = default</span><br><span class="line">project_name = service</span><br><span class="line">username = cinder</span><br><span class="line">password = CINDER_PASS</span><br><span class="line">[oslo_concurrency]</span><br><span class="line">lock_path = /var/lib/cinder/tmp</span><br></pre></td></tr></table></figure>
+<p>以cinder的身份填充数据库，这一步会有一个弃用信息，不用管。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su -s /bin/sh -c <span class="string">&quot;cinder-manage db sync&quot;</span> cinder</span><br></pre></td></tr></table></figure>
+<p>对接控制节点的计算服务,编辑nova的配置<code>/etc/nova/nova.conf</code>,主要是下面内容</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[cinder]</span><br><span class="line">os_region_name = RegionOne</span><br></pre></td></tr></table></figure>
+<p>重启nova组件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart openstack-nova-api.service</span><br></pre></td></tr></table></figure>
+<p>启动cinder组件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> --now openstack-cinder-api.service openstack-cinder-scheduler.service</span><br></pre></td></tr></table></figure>
+<p>验证可以参考链接： <a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/cinder-verify.html">https://docs.openstack.org/cinder/stein/install/cinder-verify.html</a></p>
+<h1 id="存储节点"><a href="#存储节点" class="headerlink" title="存储节点"></a>存储节点</h1><p>参考文档： <a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/cinder-storage-install-rdo.html">https://docs.openstack.org/cinder/stein/install/cinder-storage-install-rdo.html</a><br>官方推荐使用lvm+块存储的方式来做openstack的存储<br>这里在计算节点compute1安装第一个存储节点</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y lvm2 device-mapper-persistent-data</span><br></pre></td></tr></table></figure>
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> --now lvm2-lvmetad.service</span><br></pre></td></tr></table></figure>
+<p>现在给这个节点添加一个硬盘<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105204918.png"><br>使用下面命令让主机热加载硬盘</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;- - -&#x27;</span> &gt;/sys/class/scsi_host/host0/scan </span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;- - -&#x27;</span> &gt;/sys/class/scsi_host/host1/scan </span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;- - -&#x27;</span> &gt;/sys/class/scsi_host/host2/scan </span><br></pre></td></tr></table></figure>
+<p>开始创建存储卷</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pvcreate /dev/sdb</span><br><span class="line">vgcreate cinder-volumes /dev/sdb</span><br></pre></td></tr></table></figure>
+<p>编辑lvm的配置文件<code>/etc/lvm/lvm.conf</code>然后参考文档： <a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/cinder-storage-install-rdo.html#prerequisites">https://docs.openstack.org/cinder/stein/install/cinder-storage-install-rdo.html#prerequisites</a><br>说是建议不让lvm去扫描咱们使用的这个卷，如果不加可能会导致后期出现各种问题，还有就是如果系统本身也是lvm也需要加上，我这里系统用的就是lvm的方式所以修改的内容是</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">filter = [ <span class="string">&quot;a/sda/&quot;</span>, <span class="string">&quot;a/sdb/&quot;</span>, <span class="string">&quot;r/.*/&quot;</span>]</span><br></pre></td></tr></table></figure>
+<p>他还提醒其他计算节点如果采用的也是lvm也要过滤掉sda，如果是请跟随设置。<br>安装软件包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y openstack-cinder targetcli python-keystone</span><br></pre></td></tr></table></figure>
+<p>备份</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /etc/cinder/cinder.conf&#123;,.bak&#125;</span><br><span class="line">egrep -v <span class="string">&quot;^#|^$&quot;</span> /etc/cinder/cinder.conf.bak &gt; /etc/cinder/cinder.conf</span><br></pre></td></tr></table></figure>
+<p>修改配置文件<code>/etc/cinder/cinder.conf</code>，主要是下面内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[DEFAULT]</span><br><span class="line">enabled_backends = lvm</span><br><span class="line">glance_api_servers = http://controller:9292</span><br><span class="line"># 当前ip</span><br><span class="line">my_ip = 10.0.0.31</span><br><span class="line">transport_url = rabbit://openstack:RABBIT_PASS@controller</span><br><span class="line">auth_strategy = keystone</span><br><span class="line">[database]</span><br><span class="line">connection = mysql+pymysql://cinder:CINDER_DBPASS@controller/cinder</span><br><span class="line">[keystone_authtoken]</span><br><span class="line">www_authenticate_uri = http://controller:5000</span><br><span class="line">auth_url = http://controller:5000</span><br><span class="line">memcached_servers = controller:11211</span><br><span class="line">auth_type = password</span><br><span class="line">project_domain_name = default</span><br><span class="line">user_domain_name = default</span><br><span class="line">project_name = service</span><br><span class="line">username = cinder</span><br><span class="line">password = CINDER_PASS</span><br><span class="line">[oslo_concurrency]</span><br><span class="line">lock_path = /var/lib/cinder/tmp</span><br><span class="line">[lvm]</span><br><span class="line">volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver</span><br><span class="line">volume_group = cinder-volumes</span><br><span class="line">target_protocol = iscsi</span><br><span class="line">target_helper = lioadm</span><br></pre></td></tr></table></figure>
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> --now openstack-cinder-volume.service target.service</span><br></pre></td></tr></table></figure>
+<p>验证参考链接： <a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/cinder-verify.html">https://docs.openstack.org/cinder/stein/install/cinder-verify.html</a><br>此时打开仪表盘会发现项目中多出了一个卷<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105212115.png"></p>
+<h1 id="其他存储"><a href="#其他存储" class="headerlink" title="其他存储"></a>其他存储</h1><p>上面对接的是lvm的，下面开始对接nfs和ceph的</p>
+<h2 id="对接NFS"><a href="#对接NFS" class="headerlink" title="对接NFS"></a>对接NFS</h2><p>具体可以参考： </p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/drivers.html#nfsdriver">https://docs.openstack.org/cinder/stein/drivers.html#nfsdriver</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jiawei2527/p/14028185.html">https://www.cnblogs.com/jiawei2527/p/14028185.html</a></li>
+</ul>
+<p>这里在compute1、2上对接NFS，然后NFS是跑在2上的，为什么要在两台主机上配置呢？是因为一个cinder的存储节点可以对接多种存储，这里为了做演示都展示一下。<br>这里先配置一下NFS，在compute2上，具体操作如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install nfs-utils</span><br></pre></td></tr></table></figure>
+<p>编辑<code>/etc/exports</code>配置文件，写入以下内容</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/data 10.0.0.0/24(rw,async,no_root_squash,no_all_squash)</span><br><span class="line">/data2 10.0.0.0/24(rw,async,no_root_squash,no_all_squash)</span><br></pre></td></tr></table></figure>
+<p>创建目录以及启动并加载配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@compute2 ~]# <span class="built_in">mkdir</span> /data</span><br><span class="line">[root@compute2 ~]# <span class="built_in">mkdir</span> /data2</span><br><span class="line">[root@compute2 ~]# systemctl <span class="built_in">enable</span> rpcbind</span><br><span class="line">[root@compute2 ~]# systemctl <span class="built_in">enable</span> nfs</span><br><span class="line">Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.service to /usr/lib/systemd/system/nfs-server.service.</span><br><span class="line">[root@compute2 ~]# systemctl start rpcbind</span><br><span class="line">[root@compute2 ~]# systemctl start nfs</span><br></pre></td></tr></table></figure>
+<p>在compute1中执行命令<code>showmount -e 10.0.0.32</code>验证nfs</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# showmount -e 10.0.0.32</span><br><span class="line">Export list <span class="keyword">for</span> 10.0.0.32:</span><br><span class="line">/data2 10.0.0.0/24</span><br><span class="line">/data  10.0.0.0/24</span><br></pre></td></tr></table></figure>
+<p>在compute1的cinder上对接NFS存储，编辑配置文件<code>/etc/cinder/cinder.conf</code>，主要修改内容如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[DEFAULT]</span><br><span class="line">...</span><br><span class="line">enabled_backends = lvm,nfs</span><br><span class="line">...</span><br><span class="line">[lvm]</span><br><span class="line">...</span><br><span class="line">volume_backend_name = lvm</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">[nfs]</span><br><span class="line">volume_driver = cinder.volume.drivers.nfs.NfsDriver</span><br><span class="line">nfs_shares_config = /etc/cinder/nfs_shares</span><br><span class="line">volume_backend_name = nfs1</span><br></pre></td></tr></table></figure>
+<p>编辑<code>/etc/cinder/nfs_shares</code>写入下面内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">10.0.0.32:/data</span><br></pre></td></tr></table></figure>
+<p>重启服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart openstack-cinder-volume.service</span><br></pre></td></tr></table></figure>
+<p>现在再去compute2去创建第二个存储节点，并且对接NFS<br>参考文档： <a target="_blank" rel="noopener" href="https://docs.openstack.org/cinder/stein/install/cinder-storage-install-rdo.html">https://docs.openstack.org/cinder/stein/install/cinder-storage-install-rdo.html</a><br>安装软件包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y device-mapper-persistent-data openstack-cinder targetcli python-keystone</span><br></pre></td></tr></table></figure>
+<p>备份</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /etc/cinder/cinder.conf&#123;,.bak&#125;</span><br><span class="line">egrep -v <span class="string">&quot;^#|^$&quot;</span> /etc/cinder/cinder.conf.bak &gt; /etc/cinder/cinder.conf</span><br></pre></td></tr></table></figure>
+<p>编辑<code>/etc/cinder/cinder.conf</code>，主要内容如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[DEFAULT]</span><br><span class="line">glance_api_servers = http://controller:9292</span><br><span class="line">enabled_backends  = nfs</span><br><span class="line">my_ip = 10.0.0.32</span><br><span class="line">auth_strategy = keystone</span><br><span class="line">transport_url = rabbit://openstack:RABBIT_PASS@controller</span><br><span class="line">[database]</span><br><span class="line">connection = mysql+pymysql://cinder:CINDER_DBPASS@controller/cinder</span><br><span class="line">[keystone_authtoken]</span><br><span class="line">www_authenticate_uri = http://controller:5000</span><br><span class="line">auth_url = http://controller:5000</span><br><span class="line">memcached_servers = controller:11211</span><br><span class="line">auth_type = password</span><br><span class="line">project_domain_name = default</span><br><span class="line">user_domain_name = default</span><br><span class="line">project_name = service</span><br><span class="line">username = cinder</span><br><span class="line">password = CINDER_PASS</span><br><span class="line">[oslo_concurrency]</span><br><span class="line">lock_path = /var/lib/cinder/tmp</span><br><span class="line">[nfs]</span><br><span class="line">volume_driver = cinder.volume.drivers.nfs.NfsDriver</span><br><span class="line">nfs_shares_config = /etc/cinder/nfs_shares</span><br><span class="line">volume_backend_name = nfs2</span><br></pre></td></tr></table></figure>
+<p>编辑NFS连接文件<code>/etc/cinder/nfs_shares</code>,主要内容如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">10.0.0.32:/data2</span><br></pre></td></tr></table></figure>
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> --now openstack-cinder-volume.service target.service</span><br></pre></td></tr></table></figure>
+<p>这里算是配置了三个存储，一个是compute1上的lvm，nfs1，然后compute2上的一个nfs2，它们三个在openstack也可以做到区分，也建议做区分的使用，打开仪表盘的<code>管理员-》卷-》卷类型</code>中创建三个卷类型<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223017.png"><br>挨个更新它们的元数据<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223116.png"><br>下面是nfs2的<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223141.png"><br>其他三个同理，这里就是给对接的卷做分类，通过配置的<code>volume_backend_name</code>选项做分类，三个都做好之后去<code>计算-》卷-》卷</code>中创建卷，此时就可以选择卷类型<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223348.png"><br>我这里挨个创建5G大小的卷，然后去对应提供存储的主机中查看卷情况<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223903.png"><br>全部可用，去主机中查看<br>compute1主机的lvm<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223606.png"><br>compute2主机的nfs1和nfs2<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250105223638.png"></p>
+<h2 id="对接Ceph"><a href="#对接Ceph" class="headerlink" title="对接Ceph"></a>对接Ceph</h2><p>我的Ceph机器的ip对应表如下,网络是互通的</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 网络配置</span><br><span class="line">主机名          NAT网络         </span><br><span class="line">node1       10.0.0.150/24</span><br><span class="line">node2       10.0.0.151/24</span><br><span class="line">node3       10.0.0.152/24</span><br></pre></td></tr></table></figure>
+<p>我ceph的版本是reef，比较新，我这里因为环境问题，操作风险较大，对接的时候建议是采用对应版本的软件，我这里是使用ceph的<code>nautilus</code>版本的客户端去对接<code>reef</code>的Ceph集群，在每一台compute主机上安装ceph工具，S版本集群默认自带的最高就是<code>nautilus</code>版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install ceph-common</span><br></pre></td></tr></table></figure>
+<p>之后在ceph的管理节点上创建一个位置用来存放cinder的数据,具体含义可以参考Ceph的文档</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ceph osd pool create volumes 128</span><br></pre></td></tr></table></figure>
+<p>之后再创建一个访问凭证</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ceph auth get-or-create client.cinder mon <span class="string">&#x27;allow r&#x27;</span> osd <span class="string">&#x27;allow class-read object_prefix rbd_children, allow rwx pool=volumes,allow rwx pool=vms, allow rx pool=images&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>执行返回结果如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[client.cinder]</span><br><span class="line">        key = AQBAE4Jnr2FADxAA+5RG4nU8mOzkL3eHVzcdug==</span><br></pre></td></tr></table></figure>
+<p>需要把这个内容复制到所有openstack节点的<code>/etc/ceph/ceph.client.cinder.keyring</code>位置，命令如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> &gt;&gt; /etc/ceph/ceph.client.cinder.keyring &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">[client.cinder]</span></span><br><span class="line"><span class="string">        key = AQBAE4Jnr2FADxAA+5RG4nU8mOzkL3eHVzcdug==</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"><span class="comment"># 给权限,两种命令都可以,第一条是需要在cinder组件装好才能用</span></span><br><span class="line"><span class="built_in">chown</span> cinder:cinder /etc/ceph/ceph.client.cinder.keyring</span><br><span class="line"><span class="built_in">chmod</span> +r /etc/ceph/ceph.client.cinder.keyring</span><br></pre></td></tr></table></figure>
+<p>在所有的compute主机中中配置secret，执行下面命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成一个uuid</span></span><br><span class="line">uuidgen</span><br><span class="line"><span class="comment"># 我这里返回的是 ed4a34e1-590e-4cce-b35a-286a48d7b040 ,注意所有主机都必须是这个uuid</span></span><br><span class="line"><span class="built_in">cat</span> &gt; secret.xml &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">&lt;secret ephemeral=&#x27;no&#x27; private=&#x27;no&#x27;&gt;</span></span><br><span class="line"><span class="string">  &lt;uuid&gt;ed4a34e1-590e-4cce-b35a-286a48d7b040&lt;/uuid&gt;</span></span><br><span class="line"><span class="string">  &lt;usage type=&#x27;ceph&#x27;&gt;</span></span><br><span class="line"><span class="string">    &lt;name&gt;client.cinder secret&lt;/name&gt;</span></span><br><span class="line"><span class="string">  &lt;/usage&gt;</span></span><br><span class="line"><span class="string">&lt;/secret&gt;</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>然后定义密钥文件和设置ceph的凭证，</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">virsh secret-define --file secret.xml</span><br><span class="line"><span class="built_in">cat</span> /etc/ceph/ceph.client.cinder.keyring|grep key|awk <span class="string">&#x27;&#123;print $3&#125;&#x27;</span> &gt; ./client.cinder.key</span><br><span class="line">virsh secret-set-value --secret ed4a34e1-590e-4cce-b35a-286a48d7b040 --<span class="built_in">base64</span> $(<span class="built_in">cat</span> ./client.cinder.key)</span><br></pre></td></tr></table></figure>
+<p>之后在compute3把Ceph的<code>/etc/ceph/ceph.conf</code>文件拿过来，我这里的的内容如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">        fsid = 81ecd502-cf4e-11ef-baaf-000c297bc826</span><br><span class="line">        mon_host = [v2:10.0.0.150:3300/0,v1:10.0.0.150:6789/0] [v2:10.0.0.151:3300/0,v1:10.0.0.151:6789/0] [v2:10.0.0.152:3300/0,v1:10.0.0.152:6789/0]</span><br></pre></td></tr></table></figure>
+<p>它记录着一些连接地址什么的，需要把这个文件放到对接ceph的cinder的<code>/etc/ceph/ceph.conf</code>中，命令如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> &gt; /etc/ceph/ceph.conf &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">[global]</span></span><br><span class="line"><span class="string">        fsid = 81ecd502-cf4e-11ef-baaf-000c297bc826</span></span><br><span class="line"><span class="string">        mon_host = [v2:10.0.0.150:3300/0,v1:10.0.0.150:6789/0] [v2:10.0.0.151:3300/0,v1:10.0.0.151:6789/0] [v2:10.0.0.152:3300/0,v1:10.0.0.152:6789/0]</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>在compute3中安装cinder</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y openstack-cinder targetcli python-keystone</span><br></pre></td></tr></table></figure>
+<p>备份</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /etc/cinder/cinder.conf&#123;,.bak&#125;</span><br><span class="line">egrep -v <span class="string">&quot;^#|^$&quot;</span> /etc/cinder/cinder.conf.bak &gt; /etc/cinder/cinder.conf</span><br></pre></td></tr></table></figure>
+<p>修改配置文件<code>/etc/cinder/cinder.conf</code>，主要是下面内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[DEFAULT]</span><br><span class="line">glance_api_servers = http://controller:9292</span><br><span class="line">my_ip = 10.0.0.33 </span><br><span class="line">transport_url = rabbit://openstack:RABBIT_PASS@controller</span><br><span class="line">auth_strategy = keystone</span><br><span class="line">enabled_backends = ceph</span><br><span class="line">[database]</span><br><span class="line">connection = mysql+pymysql://cinder:CINDER_DBPASS@controller/cinder</span><br><span class="line">[keystone_authtoken]</span><br><span class="line">www_authenticate_uri = http://controller:5000</span><br><span class="line">auth_url = http://controller:5000</span><br><span class="line">memcached_servers = controller:11211</span><br><span class="line">auth_type = password</span><br><span class="line">project_domain_name = default</span><br><span class="line">user_domain_name = default</span><br><span class="line">project_name = service</span><br><span class="line">username = cinder</span><br><span class="line">password = CINDER_PASS</span><br><span class="line">[oslo_concurrency]</span><br><span class="line">lock_path = /var/lib/cinder/tmp</span><br><span class="line">[ceph]</span><br><span class="line">volume_driver = cinder.volume.drivers.rbd.RBDDriver</span><br><span class="line">rbd_pool = volumes</span><br><span class="line">rados_connect_timeout = -1</span><br><span class="line">rbd_user = cinder</span><br><span class="line">rbd_secret_uuid = ed4a34e1-590e-4cce-b35a-286a48d7b040</span><br><span class="line">volume_backend_name = ceph</span><br><span class="line">rbd_ceph_conf = /etc/ceph/ceph.conf</span><br></pre></td></tr></table></figure>
+<p>和普通官网不一样的就是我这里没配lvm直接配的ceph,要注意的是<code>my_ip</code>、<code>rbd_secret_uuid</code>、<code>volume_backend_name</code>参数，需要根据自己情况去写。启动服务相关命令如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> openstack-cinder-volume.service target.service</span><br><span class="line">systemctl start openstack-cinder-volume.service target.service</span><br><span class="line">systemctl restart openstack-cinder-volume.service</span><br></pre></td></tr></table></figure>
+<p>这里在仪表中创建一个卷类型，使用<code>volume_backend_name = ceph</code>来设置元数据<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250111152532.png"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250111152605.png"><br>尝试创建卷试试<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250111152717.png"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250111153536.png"><br>成功创建，去ceph中查看<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250111154039.png"><br>在cinder的控制主机中查看<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250111162947.png"></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%BC%80%E6%BA%90%E5%B7%A5%E5%85%B7/" rel="tag"># 开源工具</a>
+              <a href="/tags/OpenStack/" rel="tag"># OpenStack</a>
+              <a href="/tags/Stein/" rel="tag"># Stein</a>
+              <a href="/tags/Cinder/" rel="tag"># Cinder</a>
+              <a href="/tags/LVM/" rel="tag"># LVM</a>
+              <a href="/tags/NFS/" rel="tag"># NFS</a>
+              <a href="/tags/CEPH/" rel="tag"># CEPH</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/05/OpenStack-%E5%A2%9E%E5%8A%A0%E8%AE%A1%E7%AE%97%E8%8A%82%E7%82%B9(%E9%99%84shell%E8%84%9A%E6%9C%AC)/" rel="prev" title="OpenStack-增加计算节点(附shell脚本)">
+                  <i class="fa fa-angle-left"></i> OpenStack-增加计算节点(附shell脚本)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/20/2024%E6%98%A5%E7%A7%8B%E6%9D%AF%E5%86%AC%E5%AD%A3%E8%B5%9B-WriteUp/" rel="next" title="2024春秋杯冬季赛-WriteUp">
+                  2024春秋杯冬季赛-WriteUp <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2025/01/11/OpenStack-Cinder%E5%9D%97%E5%AD%98%E5%82%A8-%E5%AF%B9%E6%8E%A5LVM%E3%80%81NFS%E3%80%81CEPH/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

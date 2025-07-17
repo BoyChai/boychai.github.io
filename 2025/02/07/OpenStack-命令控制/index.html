@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="身份验证 1 2 3 4 5 6 7   export OS_USERNAME&#x3D;admin export OS_PASSWORD&#x3D;ADMIN_PASS export OS_PROJECT_NAME&#x3D;admin export OS_USER_DOMAIN_NAME&#x3D;Default export OS_PROJECT_DOMAIN_NAME&#x3D;Default export OS_AUTH_URL&#x3D;htt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenStack-命令控制">
+<meta property="og:url" content="https://blog.boychai.xyz/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="身份验证 1 2 3 4 5 6 7   export OS_USERNAME&#x3D;admin export OS_PASSWORD&#x3D;ADMIN_PASS export OS_PROJECT_NAME&#x3D;admin export OS_USER_DOMAIN_NAME&#x3D;Default export OS_PROJECT_DOMAIN_NAME&#x3D;Default export OS_AUTH_URL&#x3D;htt">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207114122.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207123321.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207125916.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207125932.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207130243.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207131046.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207131712.png">
+<meta property="article:published_time" content="2025-02-07T14:26:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.600Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="开源工具">
+<meta property="article:tag" content="OpenStack">
+<meta property="article:tag" content="Stein">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250207114122.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/","path":"2025/02/07/OpenStack-命令控制/","title":"OpenStack-命令控制"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>OpenStack-命令控制 | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81"><span class="nav-number">1.</span> <span class="nav-text">身份验证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">项目管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%AE%E5%8A%A9%E4%BF%A1%E6%81%AF"><span class="nav-number">2.1.</span> <span class="nav-text">帮助信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E5%88%9B%E5%BB%BA"><span class="nav-number">2.2.</span> <span class="nav-text">项目创建</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">用户管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%AE%E5%8A%A9%E4%BF%A1%E6%81%AF-1"><span class="nav-number">3.1.</span> <span class="nav-text">帮助信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E5%88%9B%E5%BB%BA"><span class="nav-number">3.2.</span> <span class="nav-text">用户创建</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%92%E8%89%B2%E7%AE%A1%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">角色管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%AE%E5%8A%A9%E4%BF%A1%E6%81%AF-2"><span class="nav-number">4.1.</span> <span class="nav-text">帮助信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E8%A7%92%E8%89%B2"><span class="nav-number">4.2.</span> <span class="nav-text">列出所有角色</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%8E%88%E6%9D%83"><span class="nav-number">4.3.</span> <span class="nav-text">用户授权</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%AE%A1%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">网络管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%AE%E5%8A%A9%E4%BF%A1%E6%81%AF-3"><span class="nav-number">5.1.</span> <span class="nav-text">帮助信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E7%BD%91%E7%BB%9C"><span class="nav-number">5.2.</span> <span class="nav-text">列出网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF"><span class="nav-number">5.3.</span> <span class="nav-text">详细信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%BD%91%E7%BB%9C"><span class="nav-number">5.4.</span> <span class="nav-text">创建网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%AD%90%E7%BD%91"><span class="nav-number">5.5.</span> <span class="nav-text">创建子网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%B7%AF%E7%94%B1"><span class="nav-number">5.6.</span> <span class="nav-text">创建路由</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E8%81%94%E8%B7%AF%E7%94%B1%E5%87%BA%E5%8F%A3%E7%BD%91%E7%BB%9C"><span class="nav-number">5.7.</span> <span class="nav-text">关联路由出口网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E8%81%94%E8%B7%AF%E7%94%B1%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C"><span class="nav-number">5.8.</span> <span class="nav-text">关联路由内部网络</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E7%BB%84%E7%AE%A1%E7%90%86"><span class="nav-number">6.</span> <span class="nav-text">安全组管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E7%BB%84%E5%88%97%E5%87%BA"><span class="nav-number">6.1.</span> <span class="nav-text">安全组列出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E7%BB%84%E5%88%9B%E5%BB%BA"><span class="nav-number">6.2.</span> <span class="nav-text">安全组创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E7%BB%84%E8%A7%84%E5%88%99%E5%88%9B%E5%BB%BA"><span class="nav-number">6.3.</span> <span class="nav-text">安全组规则创建</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%99%9A%E6%9C%BA%E7%AE%A1%E7%90%86"><span class="nav-number">7.</span> <span class="nav-text">虚机管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%84%E6%A0%BC%E5%88%97%E5%87%BA"><span class="nav-number">7.1.</span> <span class="nav-text">规格列出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%84%E6%A0%BC%E5%88%9B%E5%BB%BA"><span class="nav-number">7.2.</span> <span class="nav-text">规格创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%99%9A%E6%9C%BA"><span class="nav-number">7.3.</span> <span class="nav-text">创建虚机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E8%99%9A%E6%9C%BA"><span class="nav-number">7.4.</span> <span class="nav-text">列出虚机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%B5%AE%E5%8A%A8IP"><span class="nav-number">7.5.</span> <span class="nav-text">创建浮动IP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E8%81%94%E6%B5%AE%E5%8A%A8ip%E7%BB%99%E8%99%9A%E6%9C%BA"><span class="nav-number">7.6.</span> <span class="nav-text">关联浮动ip给虚机</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%91%BD%E4%BB%A4"><span class="nav-number">8.</span> <span class="nav-text">其他命令</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="OpenStack-命令控制 | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenStack-命令控制
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-02-07 14:26:00" itemprop="dateCreated datePublished" datetime="2025-02-07T14:26:00+00:00">2025-02-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96%E5%B9%B3%E5%8F%B0/" itemprop="url" rel="index"><span itemprop="name">虚拟化平台</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="身份验证"><a href="#身份验证" class="headerlink" title="身份验证"></a>身份验证</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> OS_USERNAME=admin</span><br><span class="line"><span class="built_in">export</span> OS_PASSWORD=ADMIN_PASS</span><br><span class="line"><span class="built_in">export</span> OS_PROJECT_NAME=admin</span><br><span class="line"><span class="built_in">export</span> OS_USER_DOMAIN_NAME=Default</span><br><span class="line"><span class="built_in">export</span> OS_PROJECT_DOMAIN_NAME=Default</span><br><span class="line"><span class="built_in">export</span> OS_AUTH_URL=http://controller:5000/v3</span><br><span class="line"><span class="built_in">export</span> OS_IDENTITY_API_VERSION=3</span><br></pre></td></tr></table></figure>
+<h1 id="项目管理"><a href="#项目管理" class="headerlink" title="项目管理"></a>项目管理</h1><h2 id="帮助信息"><a href="#帮助信息" class="headerlink" title="帮助信息"></a>帮助信息</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack project -h</span><br><span class="line">Command <span class="string">&quot;project&quot;</span> matches:</span><br><span class="line">  project create</span><br><span class="line">  project delete</span><br><span class="line">  project list</span><br><span class="line">  project purge</span><br><span class="line">  project <span class="built_in">set</span></span><br><span class="line">  project show</span><br></pre></td></tr></table></figure>
+<h2 id="项目创建"><a href="#项目创建" class="headerlink" title="项目创建"></a>项目创建</h2><p>执行<code>openstack project create cec</code>命令创建一个名为cec的项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack project create cec</span><br><span class="line">+-------------+----------------------------------+</span><br><span class="line">| Field       | Value                            |</span><br><span class="line">+-------------+----------------------------------+</span><br><span class="line">| description |                                  |</span><br><span class="line">| domain_id   | default                          |</span><br><span class="line">| enabled     | True                             |</span><br><span class="line">| <span class="built_in">id</span>          | d4bc3306513e4ad29a909a48a2d99050 |</span><br><span class="line">| is_domain   | False                            |</span><br><span class="line">| name        | cec                              |</span><br><span class="line">| parent_id   | default                          |</span><br><span class="line">| tags        | []                               |</span><br><span class="line">+-------------+----------------------------------+</span><br></pre></td></tr></table></figure>
+<h1 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h1><h2 id="帮助信息-1"><a href="#帮助信息-1" class="headerlink" title="帮助信息"></a>帮助信息</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack user -h</span><br><span class="line">Command <span class="string">&quot;user&quot;</span> matches:</span><br><span class="line">  user create</span><br><span class="line">  user delete</span><br><span class="line">  user list</span><br><span class="line">  user password <span class="built_in">set</span></span><br><span class="line">  user <span class="built_in">set</span></span><br><span class="line">  user show</span><br></pre></td></tr></table></figure>
+<h2 id="用户创建"><a href="#用户创建" class="headerlink" title="用户创建"></a>用户创建</h2><p>执行<code>openstack user create --domain default --password openstack2025 zhangsan</code>命令创建一个名字为<code>zhangsan</code>密码为<code>openstack2025</code>的用户。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack user create --domain default --password openstack2025 zhangsan</span><br><span class="line">+---------------------+----------------------------------+</span><br><span class="line">| Field               | Value                            |</span><br><span class="line">+---------------------+----------------------------------+</span><br><span class="line">| domain_id           | default                          |</span><br><span class="line">| enabled             | True                             |</span><br><span class="line">| <span class="built_in">id</span>                  | fdb63599689244748bc10f696cef95ef |</span><br><span class="line">| name                | zhangsan                         |</span><br><span class="line">| options             | &#123;&#125;                               |</span><br><span class="line">| password_expires_at | None                             |</span><br><span class="line">+---------------------+----------------------------------+</span><br></pre></td></tr></table></figure>
+
+<h1 id="角色管理"><a href="#角色管理" class="headerlink" title="角色管理"></a>角色管理</h1><h2 id="帮助信息-2"><a href="#帮助信息-2" class="headerlink" title="帮助信息"></a>帮助信息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack role -h</span><br><span class="line">Command &quot;role&quot; matches:</span><br><span class="line">  role add</span><br><span class="line">  role assignment list</span><br><span class="line">  role create</span><br><span class="line">  role delete</span><br><span class="line">  role list</span><br><span class="line">  role remove</span><br><span class="line">  role set</span><br><span class="line">  role show</span><br></pre></td></tr></table></figure>
+<h2 id="列出所有角色"><a href="#列出所有角色" class="headerlink" title="列出所有角色"></a>列出所有角色</h2><p>执行<code>openstack role list</code>命令查看所有角色</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack role list</span><br><span class="line">+----------------------------------+--------+</span><br><span class="line">| ID                               | Name   |</span><br><span class="line">+----------------------------------+--------+</span><br><span class="line">| 5daaa049f2074497b015fc8e47bbe847 | reader |</span><br><span class="line">| 654636054f124ade812e3aac84059880 | user   |</span><br><span class="line">| 9feed25c0a2a4fcaae9eefd1d1ec872e | member |</span><br><span class="line">| e55c05c671b445c6bab35dfaf337433d | admin  |</span><br><span class="line">+----------------------------------+--------+</span><br></pre></td></tr></table></figure>
+<h2 id="用户授权"><a href="#用户授权" class="headerlink" title="用户授权"></a>用户授权</h2><p>执行<code>openstack role add --project cec --user zhangsan admin</code>命令，把用户<code>zhangsan</code>划分到<code>cec</code>项目中并且给予<code>admin</code>权限。这条命令正常是无回显的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack role add --project cec --user zhangsan admin</span><br></pre></td></tr></table></figure>
+<h1 id="网络管理"><a href="#网络管理" class="headerlink" title="网络管理"></a>网络管理</h1><h2 id="帮助信息-3"><a href="#帮助信息-3" class="headerlink" title="帮助信息"></a>帮助信息</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack network -h</span><br><span class="line">Command <span class="string">&quot;network&quot;</span> matches:</span><br><span class="line">  network agent add network</span><br><span class="line">  network agent add router</span><br><span class="line">  network agent delete</span><br><span class="line">  network agent list</span><br><span class="line">  network agent remove network</span><br><span class="line">  network agent remove router</span><br><span class="line">  network agent <span class="built_in">set</span></span><br><span class="line">  network agent show</span><br><span class="line">  network auto allocated topology create</span><br><span class="line">  network auto allocated topology delete</span><br><span class="line">  network create</span><br><span class="line">  network delete</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p>这个有很多,不说细写,用到的时候再去学习也不是很晚。</p>
+<h2 id="列出网络"><a href="#列出网络" class="headerlink" title="列出网络"></a>列出网络</h2><p>通过命令<code>openstack network list</code>列出网络</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack network list</span><br><span class="line">+--------------------------------------+------------+--------------------------------------+</span><br><span class="line">| ID                                   | Name       | Subnets                              |</span><br><span class="line">+--------------------------------------+------------+--------------------------------------+</span><br><span class="line">| 0a89e120-408a-4495-a6b5-6bae36b45087 | test1      | 42a42a5c-7c7f-42b6-8335-0bd4ff9c5b7a |</span><br><span class="line">| 5b0ca4e2-9cb7-40ff-8126-8f6871366ea8 | net_vmnet1 | acefb75a-c3e4-41f8-b411-756ca7145099 |</span><br><span class="line">| dd604587-3542-409b-9ca8-eed06840fb55 | provider   | 69611b38-36b5-4e98-b47e-949c2137dbe1 |</span><br><span class="line">+--------------------------------------+------------+--------------------------------------+</span><br></pre></td></tr></table></figure>
+<h2 id="详细信息"><a href="#详细信息" class="headerlink" title="详细信息"></a>详细信息</h2><p>通过命令<code>openstack network show &#123;网络名称&#125;</code>即可列出他的详细信息<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207114122.png"></p>
+<h2 id="创建网络"><a href="#创建网络" class="headerlink" title="创建网络"></a>创建网络</h2><p>通过命令<code>openstack network create --share --external --provider-network-type flat public --provider-physical-network provider</code> 来创建flat一个网络，参数具体含义如下</p>
+<ul>
+<li>–share 共享的</li>
+<li>–external 外部的</li>
+<li>–provider-network-type flat 指定网络类型为flat</li>
+<li>public 网络名称</li>
+<li>–provider-physical-network provider 指定物理网络名称为provider</li>
+</ul>
+<p>其中<code>provider</code>是在neutron的ml2模块中指定的。<br>其他参数可以参考<code> openstack network create -h</code>命令给的帮助</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack network create -h</span><br><span class="line">usage: openstack network create [-h] [-f &#123;json,shell,table,value,yaml&#125;]</span><br><span class="line">                                [-c COLUMN] [--max-width &lt;<span class="built_in">integer</span>&gt;]</span><br><span class="line">                                [--fit-width] [--print-empty] [--noindent]</span><br><span class="line">                                [--prefix PREFIX] [--share | --no-share]</span><br><span class="line">                                [--<span class="built_in">enable</span> | --<span class="built_in">disable</span>] [--project &lt;project&gt;]</span><br><span class="line">                                [--description &lt;description&gt;] [--mtu &lt;mtu&gt;]</span><br><span class="line">                                [--project-domain &lt;project-domain&gt;]</span><br><span class="line">                                [--availability-zone-hint &lt;availability-zone&gt;]</span><br><span class="line">                                [--enable-port-security | --disable-port-security]</span><br><span class="line">                                [--external | --internal]</span><br><span class="line">                                [--default | --no-default]</span><br><span class="line">                                [--qos-policy &lt;qos-policy&gt;]</span><br><span class="line">                                [--transparent-vlan | --no-transparent-vlan]</span><br><span class="line">                                [--provider-network-type &lt;provider-network-type&gt;]</span><br><span class="line">                                [--provider-physical-network &lt;provider-physical-network&gt;]</span><br><span class="line">                                [--provider-segment &lt;provider-segment&gt;]</span><br><span class="line">                                [--dns-domain &lt;dns-domain&gt;]</span><br><span class="line">                                [--tag &lt;tag&gt; | --no-tag]</span><br><span class="line">                                &lt;name&gt;</span><br></pre></td></tr></table></figure>
+<p>创建vpc网络<br><code>openstack network create --project cec --provider-network-type vxlan cec-vpc</code></p>
+<h2 id="创建子网"><a href="#创建子网" class="headerlink" title="创建子网"></a>创建子网</h2><p>参考命令如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 命令如下</span></span><br><span class="line"> openstack subnet create cec-subnet --network cec-vpc --subnet-range 172.16.2.0/24 --allocation-pool start=172.16.2.1,end=172.16.2.253 --gateway 172.16.2.254 --dns-nameserver 223.5.5.5</span><br><span class="line"><span class="comment"># 注解如下</span></span><br><span class="line">openstack subnet create --network 指定网络名称 --allocation-pool start=分配起始ip,end=结束分配ip --dns-nameserver 分配的dns主机 --gateway 网关 --subnet-range 网络地址 名字</span><br></pre></td></tr></table></figure>
+<h2 id="创建路由"><a href="#创建路由" class="headerlink" title="创建路由"></a>创建路由</h2><p>执行<code>openstack router create --project cec cec-router</code>命令在<code>cec</code>项目中创建一个路由<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207123321.png"></p>
+<h2 id="关联路由出口网络"><a href="#关联路由出口网络" class="headerlink" title="关联路由出口网络"></a>关联路由出口网络</h2><p>执行<code>openstack router set cec-router --external-gateway provider</code>命令设置<code>cec-router</code>路由的外部出口接口为<code>provider</code>网络,执行下面命令成功是无回显的。这条命令是不支持<code>--project</code>指定项目的，如果多个项目中都有这个名字，可以使用<code>openstack project set &lt;project_name&gt;</code>来切换项目，或者更新<code>openrc</code>验证脚本的<code>OS_PROJECT_NAME</code>参数</p>
+<h2 id="关联路由内部网络"><a href="#关联路由内部网络" class="headerlink" title="关联路由内部网络"></a>关联路由内部网络</h2><p>执行<code>openstack router add subnet cec-router cec-subnet</code>关联路由的内部网络，这条命令是不支持<code>--project</code>指定项目的，如果多个项目中都有这个名字，可以更新<code>openrc</code>验证脚本的<code>OS_PROJECT_NAME</code>参数。</p>
+<h1 id="安全组管理"><a href="#安全组管理" class="headerlink" title="安全组管理"></a>安全组管理</h1><h2 id="安全组列出"><a href="#安全组列出" class="headerlink" title="安全组列出"></a>安全组列出</h2><p>通过<code>openstack security group list</code>命令列出所有安全组<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207125916.png"></p>
+<h2 id="安全组创建"><a href="#安全组创建" class="headerlink" title="安全组创建"></a>安全组创建</h2><p>通过<code>openstack security group create --project cec cec-sg</code>命令在<code>cec</code>项目中创建一个名为<code>cec-sg</code>的安全组<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207125932.png"></p>
+<h2 id="安全组规则创建"><a href="#安全组规则创建" class="headerlink" title="安全组规则创建"></a>安全组规则创建</h2><p>通过<code>openstack security group rule create --project cec --proto tcp --dst-port 22:22 cec-sg</code>命令来放行<code>cec</code>项目中的<code>cec-sg</code>安全组的22端口<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207130243.png"></p>
+<h1 id="虚机管理"><a href="#虚机管理" class="headerlink" title="虚机管理"></a>虚机管理</h1><h2 id="规格列出"><a href="#规格列出" class="headerlink" title="规格列出"></a>规格列出</h2><p>执行<code>openstack flavor list</code>命令列出实例规格</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack flavor list</span><br><span class="line">+----+---------+-----+------+-----------+-------+-----------+</span><br><span class="line">| ID | Name    | RAM | Disk | Ephemeral | VCPUs | Is Public |</span><br><span class="line">+----+---------+-----+------+-----------+-------+-----------+</span><br><span class="line">| 0  | m1.nano |  64 |    1 |         0 |     1 | True      |</span><br><span class="line">+----+---------+-----+------+-----------+-------+-----------+</span><br></pre></td></tr></table></figure>
+<h2 id="规格创建"><a href="#规格创建" class="headerlink" title="规格创建"></a>规格创建</h2><p>通过命令<code>openstack flavor create n1.nano --vcpus 1 --ram 128 --disk 1</code>创建一个名字为<code>n1.nano</code> cpu数量为<code>1</code> 内存为<code>128m</code> 磁盘为<code>1G</code>的实例规格</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack flavor create n1.nano --vcpus 1 --ram 128 --disk 1</span><br><span class="line">+----------------------------+--------------------------------------+</span><br><span class="line">| Field                      | Value                                |</span><br><span class="line">+----------------------------+--------------------------------------+</span><br><span class="line">| OS-FLV-DISABLED:disabled   | False                                |</span><br><span class="line">| OS-FLV-EXT-DATA:ephemeral  | 0                                    |</span><br><span class="line">| disk                       | 1                                    |</span><br><span class="line">| <span class="built_in">id</span>                         | bf316702-0183-46ea-8a6c-5a8678f17d7d |</span><br><span class="line">| name                       | n1.nano                              |</span><br><span class="line">| os-flavor-access:is_public | True                                 |</span><br><span class="line">| properties                 |                                      |</span><br><span class="line">| ram                        | 128                                  |</span><br><span class="line">| rxtx_factor                | 1.0                                  |</span><br><span class="line">| swap                       |                                      |</span><br><span class="line">| vcpus                      | 1                                    |</span><br><span class="line">+----------------------------+--------------------------------------+</span><br></pre></td></tr></table></figure>
+<h2 id="创建虚机"><a href="#创建虚机" class="headerlink" title="创建虚机"></a>创建虚机</h2><p>使用<code>openstack server create --flavor n1.nano --image cirros --nic net-id=cec-vpc --security-group cec-sg cec-vm01</code>命令创建一个规格为<code>n1.nano</code> 镜像为<code>cirros</code> 网络为<code>cec-vpc</code> 安全组为<code>cec-sg</code> 名为<code>cec-vm01</code>的虚机<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207131046.png"></p>
+<h2 id="列出虚机"><a href="#列出虚机" class="headerlink" title="列出虚机"></a>列出虚机</h2><p>通过<code>openstack server list</code>命令列出当前项目下的虚机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# openstack server list</span><br><span class="line">+--------------------------------------+----------+--------+---------------------+--------+---------+</span><br><span class="line">| ID                                   | Name     | Status | Networks            | Image  | Flavor  |</span><br><span class="line">+--------------------------------------+----------+--------+---------------------+--------+---------+</span><br><span class="line">| 965bc540-28b9-45a9-9130-b1f6a94d11cd | cec-vm01 | ACTIVE | cec-vpc=172.16.2.44 | cirros | n1.nano |</span><br><span class="line">+--------------------------------------+----------+--------+---------------------+--------+---------+</span><br></pre></td></tr></table></figure>
+<h2 id="创建浮动IP"><a href="#创建浮动IP" class="headerlink" title="创建浮动IP"></a>创建浮动IP</h2><p>通过<code>openstack floating ip create provider</code>命令创建一个浮动ip，<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250207131712.png"></p>
+<h2 id="关联浮动ip给虚机"><a href="#关联浮动ip给虚机" class="headerlink" title="关联浮动ip给虚机"></a>关联浮动ip给虚机</h2><p>通过<code>openstack server add floating ip cec-vm01 10.0.0.204</code>命令给主机<code>cec-vm01</code>关联<code>10.0.0.204</code>的浮动ip，如果不指定ip直接执行则会从浮动ip中随机拿一条给他用。这条命令执行成功是无回显的。</p>
+<h1 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h1><p><code>OpenStack</code>的命令有很多很多，这里无法一一的去做讲解，而是在实战中使用学习，这里只是说了些常用的，还有一些删除增加查看这里可能没说，基本上就是<code>openstack 类别 list|create|delete|show</code>来去管理这些内容。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%BC%80%E6%BA%90%E5%B7%A5%E5%85%B7/" rel="tag"># 开源工具</a>
+              <a href="/tags/OpenStack/" rel="tag"># OpenStack</a>
+              <a href="/tags/Stein/" rel="tag"># Stein</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/" rel="prev" title="2025第一届“启航杯”网络安全挑战赛-WriteUp">
+                  <i class="fa fa-angle-left"></i> 2025第一届“启航杯”网络安全挑战赛-WriteUp
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" rel="next" title="OpenStack-内部网络原理分析">
+                  OpenStack-内部网络原理分析 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

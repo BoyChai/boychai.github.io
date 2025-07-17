@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="DNS DNS是将域名解析成IP地址的协议，有的时候也用于将IP地址反向解析成域名，也可以实现双向的解析。  当客户端使用域名时会向DNS服务器发送请求，DNS会返回相应的IP给客户端之后客户端在向对应的IP发起请求。  域名 域名是网络上用于网络域、计算机、服务器等网络设备地址的标识。域名的结构如下图  结构: 域名是分层管理的,最高层的域名是根域”.”就是一个点”.”。 根域: 全世界只有13">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BIND9-DNS服务器配置">
+<meta property="og:url" content="https://blog.boychai.xyz/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="DNS DNS是将域名解析成IP地址的协议，有的时候也用于将IP地址反向解析成域名，也可以实现双向的解析。  当客户端使用域名时会向DNS服务器发送请求，DNS会返回相应的IP给客户端之后客户端在向对应的IP发起请求。  域名 域名是网络上用于网络域、计算机、服务器等网络设备地址的标识。域名的结构如下图  结构: 域名是分层管理的,最高层的域名是根域”.”就是一个点”.”。 根域: 全世界只有13">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/DNS%26BIND9_1.jpg">
+<meta property="og:image" content="https://image.boychai.xyz/article/DNS%26BIND9_2.jpg">
+<meta property="article:published_time" content="2022-01-21T11:07:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.597Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="DNS">
+<meta property="article:tag" content="网络服务">
+<meta property="article:tag" content="Bind9">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/DNS%26BIND9_1.jpg">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/","path":"2022/01/21/BIND9-DNS服务器/","title":"BIND9-DNS服务器配置"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>BIND9-DNS服务器配置 | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#DNS"><span class="nav-number">1.</span> <span class="nav-text">DNS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D"><span class="nav-number">2.</span> <span class="nav-text">域名</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BIND9"><span class="nav-number">3.</span> <span class="nav-text">BIND9</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">3.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E9%85%8D%E7%BD%AE"><span class="nav-number">3.2.</span> <span class="nav-text">主配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%84%E7%A7%8D%E7%B1%BB%E5%9E%8B%E7%9A%84%E8%AE%B0%E5%BD%95"><span class="nav-number">3.3.</span> <span class="nav-text">各种类型的记录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%80%E4%B8%AA%E6%AD%A3%E5%90%91%E8%A7%A3%E6%9E%90%E5%9F%9F"><span class="nav-number">3.4.</span> <span class="nav-text">配置一个正向解析域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">3.5.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%80%E4%B8%AA%E5%8F%8D%E5%90%91%E8%A7%A3%E6%9E%90%E5%9F%9F"><span class="nav-number">3.6.</span> <span class="nav-text">配置一个反向解析域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95-1"><span class="nav-number">3.7.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A7%94%E6%B4%BEDNS"><span class="nav-number">4.</span> <span class="nav-text">委派DNS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BE%85%E5%8A%A9DNS"><span class="nav-number">5.</span> <span class="nav-text">辅助DNS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%BA%E8%83%BDDNS"><span class="nav-number">6.</span> <span class="nav-text">智能DNS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ACL%E7%BB%84"><span class="nav-number">6.1.</span> <span class="nav-text">ACL组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#view%E8%A7%86%E5%9B%BE"><span class="nav-number">6.2.</span> <span class="nav-text">view视图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">6.3.</span> <span class="nav-text">配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AC%E7%BD%91DNS"><span class="nav-number">7.</span> <span class="nav-text">公网DNS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BIND-UTILS%E5%B7%A5%E5%85%B7%E5%8C%85"><span class="nav-number">8.</span> <span class="nav-text">BIND-UTILS工具包</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-1"><span class="nav-number">8.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nslookup"><span class="nav-number">8.2.</span> <span class="nav-text">nslookup</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#host"><span class="nav-number">8.3.</span> <span class="nav-text">host</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dig"><span class="nav-number">8.4.</span> <span class="nav-text">dig</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nsupdate"><span class="nav-number">8.5.</span> <span class="nav-text">nsupdate</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RNDC%E7%AE%A1%E7%90%86BIND9"><span class="nav-number">9.</span> <span class="nav-text">RNDC管理BIND9</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">10.</span> <span class="nav-text">其他</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8F%E5%AE%9A%E4%B9%89%E5%86%99%E6%B3%95"><span class="nav-number">10.1.</span> <span class="nav-text">宏定义写法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%AA%8C%E8%AF%81%E6%88%91%E7%9A%84%E9%85%8D%E7%BD%AE%EF%BC%9F"><span class="nav-number">10.2.</span> <span class="nav-text">如何验证我的配置？</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="BIND9-DNS服务器配置 | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          BIND9-DNS服务器配置
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-01-21 11:07:00" itemprop="dateCreated datePublished" datetime="2022-01-21T11:07:00+00:00">2022-01-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1/" itemprop="url" rel="index"><span itemprop="name">网络服务</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>19 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h1><p>DNS是将域名解析成IP地址的协议，有的时候也用于将IP地址反向解析成域名，也可以实现双向的解析。<br><img src="https://image.boychai.xyz/article/DNS%26BIND9_1.jpg" alt="DNS在互联网中的关系"><br>当客户端使用域名时会向DNS服务器发送请求，DNS会返回相应的IP给客户端之后客户端在向对应的IP发起请求。</p>
+<h1 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h1><p>域名是网络上用于网络域、计算机、服务器等网络设备地址的标识。域名的结构如下图<br><img src="https://image.boychai.xyz/article/DNS%26BIND9_2.jpg" alt="域名结构"><br><strong>结构:</strong> 域名是分层管理的,最高层的域名是根域”.”就是一个点”.”。<br><strong>根域:</strong> 全世界只有13组根服务器，名字分别为A至M，其中10台设置在美国，另外三台设置于英国、瑞典、日本。顶级域名是由ICANN委任的注册机构负责运行。<br><strong>二级域名:</strong> 二级域名不需要到ICANN进行申请，只需要到顶级域名的注册机构去检查带申请的名字是否可用，并且不是别人的商标时只需要缴纳一笔一年的费用即可得到相应的域名。</p>
+<h1 id="BIND9"><a href="#BIND9" class="headerlink" title="BIND9"></a>BIND9</h1><p>BIND9是用于搭建DNS服务器的一个软件应用。</p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# yum -y install <span class="built_in">bind</span></span><br><span class="line">[root@localhost ~]# named -v</span><br><span class="line">BIND 9.11.26-RedHat-9.11.26-6.el8 (Extended Support Version) &lt;<span class="built_in">id</span>:3ff8620&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="主配置"><a href="#主配置" class="headerlink" title="主配置"></a>主配置</h2><p>主配置文件为<code>/etc/named.conf</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">//</span><br><span class="line">// named.conf</span><br><span class="line">//</span><br><span class="line">// Provided by Red Hat <span class="built_in">bind</span> package to configure the ISC BIND named(8) DNS</span><br><span class="line">// server as a caching only nameserver (as a localhost DNS resolver only).</span><br><span class="line">//</span><br><span class="line">// See /usr/share/doc/bind*/sample/ <span class="keyword">for</span> example named configuration files.</span><br><span class="line">//</span><br><span class="line"></span><br><span class="line">options &#123;</span><br><span class="line">        listen-on port 53 &#123; 127.0.0.1; &#125;;    //监听的ipv4端口以及ip，需要改成自己的主机ip</span><br><span class="line">        listen-on-v6 port 53 &#123; ::1; &#125;;    //监听的ipv6端口以及ip，改成自己的ipv6地址。用不到可以直注释掉</span><br><span class="line">        directory       <span class="string">&quot;/var/named&quot;</span>;    //区域文件存放位置</span><br><span class="line">        dump-file       <span class="string">&quot;/var/named/data/cache_dump.db&quot;</span>;    //当执行rndc dumpdb时服务器存放数据库文件路径名</span><br><span class="line">        statistics-file <span class="string">&quot;/var/named/data/named_stats.txt&quot;</span>;    //当执行rndc stats命令的时候,服务器会统计信息追加到的文件路径</span><br><span class="line">        memstatistics-file <span class="string">&quot;/var/named/data/named_mem_stats.txt&quot;</span>;    //服务器输出的内存使用统计文件路径</span><br><span class="line">        secroots-file   <span class="string">&quot;/var/named/data/named.secroots&quot;</span>;    //安全根的保存位置</span><br><span class="line">        recursing-file  <span class="string">&quot;/var/named/data/named.recursing&quot;</span>;    //递归查询数据的保存位置</span><br><span class="line">        allow-query     &#123; localhost; &#125;;    //允许查询的ip,需要改为any</span><br><span class="line"></span><br><span class="line">        /*</span><br><span class="line">         - If you are building an AUTHORITATIVE DNS server, <span class="keyword">do</span> NOT <span class="built_in">enable</span> recursion.</span><br><span class="line">         - If you are building a RECURSIVE (caching) DNS server, you need to <span class="built_in">enable</span></span><br><span class="line">           recursion.</span><br><span class="line">         - If your recursive DNS server has a public IP address, you MUST <span class="built_in">enable</span> access</span><br><span class="line">           control to <span class="built_in">limit</span> queries to your legitimate <span class="built_in">users</span>. Failing to <span class="keyword">do</span> so will</span><br><span class="line">           cause your server to become part of large scale DNS amplification</span><br><span class="line">           attacks. Implementing BCP38 within your network would greatly</span><br><span class="line">           reduce such attack surface</span><br><span class="line">        */</span><br><span class="line">        recursion <span class="built_in">yes</span>;    //允许递归查询</span><br><span class="line"></span><br><span class="line">        dnssec-enable <span class="built_in">yes</span>;    //开启dnssec</span><br><span class="line">        dnssec-validation <span class="built_in">yes</span>;    //设置dnssec在递归查询服务器上开启</span><br><span class="line"></span><br><span class="line">        managed-keys-directory <span class="string">&quot;/var/named/dynamic&quot;</span>;    //指定目录中的文件储存,跟踪管理DNSSEC密钥</span><br><span class="line"></span><br><span class="line">        pid-file <span class="string">&quot;/run/named/named.pid&quot;</span>;    //pid文件路径</span><br><span class="line">        session-keyfile <span class="string">&quot;/run/named/session.key&quot;</span>;    //会话密钥路径</span><br><span class="line"></span><br><span class="line">        /* https://fedoraproject.org/wiki/Changes/CryptoPolicy */</span><br><span class="line">        include <span class="string">&quot;/etc/crypto-policies/back-ends/bind.config&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line">// 日志相关内容</span><br><span class="line">logging &#123;</span><br><span class="line">        channel default_debug &#123;</span><br><span class="line">                file <span class="string">&quot;data/named.run&quot;</span>;</span><br><span class="line">                severity dynamic;</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">//定义了根区域，没事可以看一下他这个区域文件(/var/named/named.ca)，里面配置了13个根主机以及ipv4的地址还有ipv6的地址</span><br><span class="line">zone <span class="string">&quot;.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> hint;</span><br><span class="line">        file <span class="string">&quot;named.ca&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">include <span class="string">&quot;/etc/named.rfc1912.zones&quot;</span>;    //标注的文件也作为配置生效，这个一般用于存放区域的配置</span><br><span class="line">include <span class="string">&quot;/etc/named.root.key&quot;</span>;    //标注的文件也作为配置生效</span><br></pre></td></tr></table></figure>
+<p>这个文件里面暂只需要修改的配置已列出：</p>
+<ul>
+<li><code>listen-on port 53 &#123; 服务器的IP; &#125;;</code>    &#x2F;&#x2F;监听的ipv4端口以及ip，需要改成自己的主机ip</li>
+<li><code>allow-query     &#123; any; &#125;;</code>    &#x2F;&#x2F;允许查询的ip,需要改为any<br>其他配置看自己需求来</li>
+</ul>
+<h2 id="各种类型的记录"><a href="#各种类型的记录" class="headerlink" title="各种类型的记录"></a>各种类型的记录</h2><p><strong>SOA记录:</strong> 起始授权记录 表示一个授权区域的开始<br><strong>NS记录:</strong> 标识一个域的域名服务器<br><strong>A记录:</strong> 将主机名转换为ipv4地址<br><strong>AAAA记录:</strong> 将主机名转换为ipv6地址<br><strong>CNAME记录:</strong> 别名记录 解析域名<br><strong>MX记录:</strong> 邮件交换记录<br><strong>PTR记录:</strong> 将地址转换成域名 反向解析</p>
+<h2 id="配置一个正向解析域"><a href="#配置一个正向解析域" class="headerlink" title="配置一个正向解析域"></a>配置一个正向解析域</h2><p>编辑区域文件<code>/etc/named.rfc1912.zones</code>在最底下添加内容</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# <span class="built_in">tail</span> -n5 /etc/named.rfc1912.zones</span><br><span class="line">zone <span class="string">&quot;host.com.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;host.com.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; none; &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>zone:</strong> 定义一个区域写法为 <code>zone &quot;域名.&quot; IN &#123;配置&#125;</code><br><strong>type:</strong> 设置类型为master<br><strong>file:</strong> 设置区域的解析记录文件名称为host.com.zone<br><strong>allow-update:</strong> 设置动态更新的ip，我这写的是none即不允许动态更新</p>
+<p>现在设置此域名的解析记录，在<code>/var/named/</code>下创建对应文件host.com.zone并编辑</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost named]# <span class="built_in">pwd</span></span><br><span class="line">/var/named</span><br><span class="line">[root@localhost named]# <span class="built_in">touch</span> host.com.zone</span><br><span class="line">[root@localhost named]# vim host.com.zone</span><br><span class="line">host.com. 600 IN SOA ns1.host.com. chai.simplefish.cn. (</span><br><span class="line">                        202212101      ;序列号，每次更新记录则需要修改</span><br><span class="line">                        10800          ;刷新时间，没隔多久到主服务器更新一次</span><br><span class="line">                        900            ;重试时间，应该小于刷新时间</span><br><span class="line">                        604800         ;过期时间，当辅助dns服务器无法联系主服务器的时间，超过这个时间则过期</span><br><span class="line">                        86400          ;非权威应答的ttl，缓存DNS记录多长时间</span><br><span class="line">)</span><br><span class="line">host.com. 600 IN NS ns1.host.com.</span><br><span class="line">ns1.host.com. 60 IN A 192.160.0.100</span><br><span class="line">dns.host.com. 60 IN A 192.160.0.100</span><br><span class="line">bind.host.com. 60 IN A 192.160.0.100</span><br><span class="line">www.host.com. 60 IN A 192.160.0.100</span><br><span class="line">[root@localhost named]# systemctl start named    //启动服务</span><br></pre></td></tr></table></figure>
+<p>一共有六条记录，其中SOA和NS记录时必须要有的。<br>记录写法为: 主机名 TTL值 IN 记录类型 值<br>在bind9里的所有配置文件中 所有的域名最后都必须带有”.”，这个”.”意味着根域的意思所以必须要有，不然启动服务的时候会报语法错误。</p>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>打开自己电脑的CMD执行一下操作</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\SimpleFish&gt;nslookup    //使用nslookup工具</span><br><span class="line">默认服务器:  public1.114dns.com</span><br><span class="line">Address:  114.114.114.114</span><br><span class="line"></span><br><span class="line">&gt; server 192.168.0.100          //server设置测试dns的服务器地址</span><br><span class="line">默认服务器:  [192.168.0.100]</span><br><span class="line">Address:  192.168.0.100</span><br><span class="line"></span><br><span class="line">&gt; <span class="built_in">set</span> <span class="built_in">type</span>=any                  //设置类型为any(全部)</span><br><span class="line">&gt; host.com                      //查看host.com的SOA记录</span><br><span class="line">服务器:  [192.168.0.100]</span><br><span class="line">Address:  192.168.0.100</span><br><span class="line"></span><br><span class="line">host.com</span><br><span class="line">        primary name server = ns1.host.com</span><br><span class="line">        responsible mail addr = chai.simplefish.cn</span><br><span class="line">        serial  = 202212101</span><br><span class="line">        refresh = 10800 (3 hours)</span><br><span class="line">        retry   = 900 (15 mins)</span><br><span class="line">        expire  = 604800 (7 days)</span><br><span class="line">        default TTL = 86400 (1 day)</span><br><span class="line">host.com        nameserver = ns1.host.com</span><br><span class="line">ns1.host.com    internet address = 192.160.0.100</span><br><span class="line">&gt; <span class="built_in">ls</span> host.com                                       //列出host.com的基本记录</span><br><span class="line">[[192.168.0.100]]</span><br><span class="line"> host.com.                      NS     server = ns1.host.com</span><br><span class="line"> <span class="built_in">bind</span>                           A      192.160.0.100</span><br><span class="line"> dns                            A      192.160.0.100</span><br><span class="line"> ns1                            A      192.160.0.100</span><br><span class="line"> www                            A      192.160.0.100</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置一个反向解析域"><a href="#配置一个反向解析域" class="headerlink" title="配置一个反向解析域"></a>配置一个反向解析域</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# <span class="built_in">tail</span> -n5 /etc/named.rfc1912.zones    //查看区域配置文件</span><br><span class="line">zone <span class="string">&quot;0.168.192.in-addr.arpa&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;0.168.192.in-addr.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; none; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">[root@localhost ~]# <span class="built_in">cat</span> /var/named/0.168.192.in-addr.zone              //查看区域的解析文件</span><br><span class="line">0.168.192.in-addr.arpa. 600 IN SOA ns1.host.com. chai.simplefish.cn. (</span><br><span class="line">                        202212101      ;序列号，每次更新记录则需要修改</span><br><span class="line">                        10800          ;刷新时间，没隔多久到主服务器更新一次</span><br><span class="line">                        900            ;重试时间，应该小于刷新时间</span><br><span class="line">                        604800         ;过期时间，当辅助dns服务器无法联系主服务器的时间</span><br><span class="line">                        86400          ;非权威应答的ttl，缓存DNS记录多长时间</span><br><span class="line">)</span><br><span class="line">0.168.192.in-addr.arpa. 600 IN NS ns1.host.com.</span><br><span class="line">100.0.168.192.in-addr.arpa. 600 IN PTR dns.host.com.</span><br><span class="line">100.0.168.192.in-addr.arpa. 600 IN PTR bind.host.com.</span><br><span class="line">100.0.168.192.in-addr.arpa. 600 IN PTR www.host.com.</span><br><span class="line">[root@localhost ~]# systemctl restart named</span><br></pre></td></tr></table></figure>
+<p>和正向解析的写法略有差别，反向解析的去域名是网段反写加in-addr.arpa，然后解析记录文件也是必须要写SOA记录和NS记录的，反向解析的记录类型为PTR。然后依旧是必须带根域”.”。</p>
+<h2 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">C:\Users\SimpleFish&gt;nslookup</span><br><span class="line">默认服务器:  public1.114dns.com</span><br><span class="line">Address:  114.114.114.114</span><br><span class="line"></span><br><span class="line">&gt; server 192.168.0.100</span><br><span class="line">默认服务器:  [192.168.0.100]</span><br><span class="line">Address:  192.168.0.100</span><br><span class="line"></span><br><span class="line">&gt; <span class="built_in">set</span> <span class="built_in">type</span>=PTR         //设置类型为PTR反向解析记录</span><br><span class="line">&gt; 192.168.0.100</span><br><span class="line">服务器:  [192.168.0.100]</span><br><span class="line">Address:  192.168.0.100</span><br><span class="line"></span><br><span class="line">100.0.168.192.in-addr.arpa      name = dns.host.com</span><br><span class="line">100.0.168.192.in-addr.arpa      name = www.host.com</span><br><span class="line">100.0.168.192.in-addr.arpa      name = bind.host.com</span><br><span class="line">0.168.192.in-addr.arpa  nameserver = ns1.host.com</span><br><span class="line">ns1.host.com    internet address = 192.160.0.100</span><br></pre></td></tr></table></figure>
+
+<h1 id="委派DNS"><a href="#委派DNS" class="headerlink" title="委派DNS"></a>委派DNS</h1><p>委派DNS的意思实质上就是指自己域名的下一级域名交给另一台主机来管理，也可以叫做子域。具体配置如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@linux-1 ~]# <span class="built_in">tail</span> -n 5 /etc/named.rfc1912.zones</span><br><span class="line">zone <span class="string">&quot;host.com.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;host.com.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; none; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">[root@linux-1 ~]# <span class="built_in">cat</span> /var/named/host.com.zone</span><br><span class="line">host.com. 600   IN SOA  dns1.host.com. chai.simplefish.cn. (</span><br><span class="line">                                        0       ; serial</span><br><span class="line">                                        10800   ; refresh</span><br><span class="line">                                        900     ; retry</span><br><span class="line">                                        604800  ; expire</span><br><span class="line">                                        86400 ) ; minimum</span><br><span class="line">host.com.               600 IN NS ns1.host.com.</span><br><span class="line">dns1.host.com.          60 IN A 192.168.1.111</span><br><span class="line">ns1.host.com.           60 IN A 192.168.1.111</span><br><span class="line">www.host.com.           60 IN A 192.168.1.111</span><br><span class="line">shanghai.host.com.      600 IN NS ns2.host.com.</span><br><span class="line">ns2.host.com.           60 IN A 192.168.1.112</span><br></pre></td></tr></table></figure>
+<p>把需要委托的下一级域名指定一条NS记录，记录指向委派的主机，上面是把shanghai.host.com这个三级域委派给192.168.1.112主机<br>再来看一下被委派主机的配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@linux-2 ~]# <span class="built_in">tail</span> -5 /etc/named.rfc1912.zones</span><br><span class="line">zone <span class="string">&quot;shanghai.host.com.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;shanghai.host.com.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; none; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">[root@linux-2 ~]# <span class="built_in">cat</span> /var/named/shanghai.host.com.zone</span><br><span class="line">shanghai.host.com. 600  IN SOA  dns1.shanghai.host.com. chai.simplefish.cn. (</span><br><span class="line">                                        0       ; serial</span><br><span class="line">                                        1D      ; refresh</span><br><span class="line">                                        1H      ; retry</span><br><span class="line">                                        1W      ; expire</span><br><span class="line">                                        3H )    ; minimum</span><br><span class="line">shanghai.host.com.                      600 IN NS ns1.shanghai.host.com.</span><br><span class="line">ns1.shanghai.host.com.                  60 IN A 192.168.1.112</span><br><span class="line">dns1.shanghai.host.com.                 60 IN A 192.168.1.112</span><br><span class="line">www.shanghai.host.com.                  60 IN A 192.168.1.112</span><br></pre></td></tr></table></figure>
+<p>被委派的则就可以正常配置，测试的话只需要指定第一台dns即可查询到委派的信息<br>第三台主机测试如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@linux-3 ~]# dig -t A www.host.com @192.168.1.111 +short</span><br><span class="line">192.168.1.111</span><br><span class="line">[root@linux-3 ~]# dig -t A www.shanghai.host.com @192.168.1.111 +short</span><br><span class="line">192.168.1.112</span><br></pre></td></tr></table></figure>
+
+<h1 id="辅助DNS"><a href="#辅助DNS" class="headerlink" title="辅助DNS"></a>辅助DNS</h1><p>主DNS的配置需要修改的参数如下</p>
+<ul>
+<li><code>listen-on port 53 &#123; 服务器的IP; &#125;;</code>    &#x2F;&#x2F;监听的ipv4端口以及ip，需要改成自己的主机ip</li>
+<li><code>allow-query     &#123; any; &#125;;</code>    &#x2F;&#x2F;允许查询的ip,需要改为any</li>
+<li><code>allow-transfer  &#123; 辅助DNS服务器的IP &#125;;</code>      &#x2F;&#x2F;允许同步自己信息的服务器，默认没有这个参数需要在主配置文件的options {}里面添加，这个参数可以写在区域文件里面。</li>
+<li><code>also-notify   &#123; 辅助DNS服务器的IP &#125;;</code>      &#x2F;&#x2F;当服务器记录更新时通知对应设置的服务器，默认没有这个参数需要在主配置文件的options {}里面添加，这个参数可以写在区域文件里面。</li>
+</ul>
+<p>辅助DNS的配置需要修改的参数如下</p>
+<ul>
+<li><code>listen-on port 53 &#123; 服务器的IP; &#125;;</code>    &#x2F;&#x2F;监听的ipv4端口以及ip，需要改成自己的主机ip</li>
+<li><code>allow-query     &#123; any; &#125;;</code>    &#x2F;&#x2F;允许查询的ip,需要改为any</li>
+<li><code>masterfile-format text;</code>    &#x2F;&#x2F;设置同步到本地的文件格式，默认没有这个参数需要在主配置文件的options {}里面添加</li>
+</ul>
+<p>主DNS的区域配置和解析配置如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@master ~]# <span class="built_in">tail</span> -n5 /etc/named.rfc1912.zones</span><br><span class="line">zone <span class="string">&quot;host.com.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;host.com.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; none; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">[root@master ~]# <span class="built_in">cat</span> /var/named/host.com.zone</span><br><span class="line">host.com. 600 IN SOA ns1.host.com. chai.simplefish.cn. (</span><br><span class="line">                        202212201      ;序列号，每次更新记录则需要修改</span><br><span class="line">                        10800          ;刷新时间，没隔多久到主服务器更新一次</span><br><span class="line">                        900            ;重试时间，应该小于刷新时间</span><br><span class="line">                        604800         ;过期时间，当辅助dns服务器无法联系主服务器的时间</span><br><span class="line">                        86400          ;非权威应答的ttl，缓存DNS记录多长时间</span><br><span class="line">)</span><br><span class="line">host.com. 600 IN NS ns1.host.com.</span><br><span class="line">ns1.host.com. 60 IN A 192.160.0.101</span><br><span class="line">dns.host.com. 60 IN A 192.160.0.101</span><br><span class="line">bind.host.com. 60 IN A 192.160.0.101</span><br><span class="line">www.host.com. 60 IN A 192.160.0.101</span><br><span class="line">[root@master ~]# systemctl restart named</span><br></pre></td></tr></table></figure>
+
+<p>辅助DNS的区域配置和解析配置如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@slave ~]# <span class="built_in">tail</span> -n5 /etc/named.rfc1912.zones</span><br><span class="line">zone <span class="string">&quot;host.com.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> slave;</span><br><span class="line">        masters &#123; 192.168.0.101; &#125;;</span><br><span class="line">        file <span class="string">&quot;slaves/host.com.zone&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line">[root@slave ~]# systemctl restart named</span><br></pre></td></tr></table></figure>
+<p>辅助DNS只需要写一个区域配置即可，解析记录它会自动同步。<br>这里类型设置成了slave<br>masters是设置主DNS服务器的IP<br>file这里设置了一个路径是slaves这个路径是可以自己改的，如果要改的话权限一定对的上不然可能会出问题，我建议就是创建的文件或者目录的用户和属组都换成named<br>刷新成功后他会在<code>/var/named/slaves</code>下生成对应的文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@slave slaves]# <span class="built_in">pwd</span></span><br><span class="line">/var/named/slaves</span><br><span class="line">[root@slave slaves]# <span class="built_in">cat</span> host.com.zone</span><br><span class="line"><span class="variable">$ORIGIN</span> .</span><br><span class="line"><span class="variable">$TTL</span> 600        ; 10 minutes</span><br><span class="line">host.com                IN SOA  ns1.host.com. chai.simplefish.cn. (</span><br><span class="line">                                202212201  ; serial</span><br><span class="line">                                10800      ; refresh (3 hours)</span><br><span class="line">                                900        ; retry (15 minutes)</span><br><span class="line">                                604800     ; expire (1 week)</span><br><span class="line">                                86400      ; minimum (1 day)</span><br><span class="line">                                )</span><br><span class="line">                        NS      ns1.host.com.</span><br><span class="line"><span class="variable">$ORIGIN</span> host.com.</span><br><span class="line"><span class="variable">$TTL</span> 60 ; 1 minute</span><br><span class="line"><span class="built_in">bind</span>                    A       192.160.0.101</span><br><span class="line">dns                     A       192.160.0.101</span><br><span class="line">ns1                     A       192.160.0.101</span><br><span class="line">www                     A       192.160.0.101</span><br></pre></td></tr></table></figure>
+<p>他这种是宏定义的方式来同步解析文件这种写法后面也会说一下。反向解析的辅助DNS配置一样域名换一下即可。</p>
+<h1 id="智能DNS"><a href="#智能DNS" class="headerlink" title="智能DNS"></a>智能DNS</h1><p>智能DNS主要作用就是不同的网段去解析一个域名，可以实现解析不同的地址。</p>
+<h2 id="ACL组"><a href="#ACL组" class="headerlink" title="ACL组"></a>ACL组</h2><p>ACL组可以用来定义一个ip的范围。any参数就是一个acl组，他代表的是全部的IP。定义方式如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">acl <span class="string">&quot;acl_name&quot;</span> &#123;</span><br><span class="line">        acl_name;        //其他的acl组</span><br><span class="line">        192.168.0.0/24;  //网段</span><br><span class="line">        !192.168.0.2;   //不包括192.168.0.2这个ip</span><br><span class="line">        &#123;                        //添加ip组</span><br><span class="line">                192.168.1.2;</span><br><span class="line">                192.168.1.3;</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="view视图"><a href="#view视图" class="headerlink" title="view视图"></a>view视图</h2><p>view视图可以对acl组单独设置dns的区域解析。写法方式如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">view <span class="string">&quot;view_name&quot;</span> &#123;                     //设置view视图的名称</span><br><span class="line">    match-clients &#123; acl组; &#125;;          //设置acl组</span><br><span class="line">    recursion <span class="built_in">yes</span>;                     //允许递归查询</span><br><span class="line">    zone <span class="string">&quot;host.com.&quot;</span> &#123;                 //正常写zone区域</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;host.com.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; none; &#125;;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果要使用view视图那么就需要把所有的区域都放到view视图里面，除了自己设置的默认还有一个默认的view视图，名称为”default”,需要把根域”.”加进去以及<code>/etc/named.rfc1912.zones</code>里的所有zone。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost named]# <span class="built_in">tail</span> -n14 /etc/named.conf //查看主配置文件。</span><br><span class="line">include <span class="string">&quot;/etc/named-view.conf&quot;</span>;     //引入我自己创建的视图文件</span><br><span class="line"></span><br><span class="line">view <span class="string">&quot;default&quot;</span> &#123;</span><br><span class="line">        match-clients &#123; any; &#125;;</span><br><span class="line">        recursion <span class="built_in">yes</span>;</span><br><span class="line">        zone <span class="string">&quot;.&quot;</span> IN &#123;</span><br><span class="line">                <span class="built_in">type</span> hint;</span><br><span class="line">                file <span class="string">&quot;named.ca&quot;</span>;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        include <span class="string">&quot;/etc/named.rfc1912.zones&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">include <span class="string">&quot;/etc/named.root.key&quot;</span>;</span><br><span class="line">[root@localhost named]# <span class="built_in">cat</span> /etc/named-view.conf          //查看我自己创建的视图文件内容</span><br><span class="line"></span><br><span class="line">acl <span class="string">&quot;test01&quot;</span> &#123;</span><br><span class="line">                192.168.0.101;                   //定义acl test01</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">acl <span class="string">&quot;test02&quot;</span> &#123;</span><br><span class="line">                192.168.0.107;                   //定义acl test02</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">view <span class="string">&quot;test01&quot;</span> &#123;                                  //配置视图test01</span><br><span class="line">        match-clients &#123; test01; &#125;;</span><br><span class="line">        recursion <span class="built_in">yes</span>;</span><br><span class="line">        zone <span class="string">&quot;host.com.&quot;</span> &#123;</span><br><span class="line">                <span class="built_in">type</span> master;</span><br><span class="line">                file <span class="string">&quot;host.com.test01.zone&quot;</span>;</span><br><span class="line">                allow-update &#123; none; &#125;;</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">view <span class="string">&quot;test02&quot;</span> &#123;                                 //配置视图test02</span><br><span class="line">        match-clients &#123; test02; &#125;;</span><br><span class="line">        recursion <span class="built_in">yes</span>;</span><br><span class="line">        zone <span class="string">&quot;host.com.&quot;</span> &#123;</span><br><span class="line">                <span class="built_in">type</span> master;</span><br><span class="line">                file <span class="string">&quot;host.com.test02.zone&quot;</span>;</span><br><span class="line">                allow-update &#123; none; &#125;;</span><br><span class="line">        &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>我把根域和named.rfc1912.zones里的所有域都放到了default视图里面。然后我还引入了一个文件用来专门放acl和view的文件，配置文件是有前后之分的如果把”default”视图放到前面则都只会匹配”default”视图所以我把它放到了前面，文件里定义了两个acl，分别是两个ip，之后分别配置了一个视图，视图里都是同一个域名但是解析文件不一样。当匹配到acl规则之后会走对应的解析文件。否则走”default”视图。</p>
+<h1 id="公网DNS"><a href="#公网DNS" class="headerlink" title="公网DNS"></a>公网DNS</h1><p>因为BIND软件开源所以公网dns涉及到一个安全的问题，就有了BIND-CHROOT这个东西，当运行的时候bind会在另一个根下运行，当服务器因为DNS某些漏洞被黑入的时候他也只能在这个根下操作。从而保证整个服务器的数据安全。<br>配置bind-chroot的方式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# yum -y install <span class="built_in">bind</span></span><br><span class="line">[root@localhost ~]# yum -y install bind-chroot</span><br><span class="line">[root@localhost ~]# <span class="built_in">cd</span> /var/named/chroot/etc/</span><br><span class="line">[root@localhost etc]# <span class="built_in">ln</span> /etc/named* ./</span><br><span class="line"><span class="built_in">ln</span>: /etc/named: hard <span class="built_in">link</span> not allowed <span class="keyword">for</span> directory</span><br><span class="line">[root@localhost etc]# <span class="built_in">cd</span> ../var/named/</span><br><span class="line">[root@localhost named]# <span class="built_in">ln</span> /var/named/* ./</span><br><span class="line"><span class="built_in">ln</span>: /var/named/chroot: hard <span class="built_in">link</span> not allowed <span class="keyword">for</span> directory</span><br><span class="line"><span class="built_in">ln</span>: /var/named/data: hard <span class="built_in">link</span> not allowed <span class="keyword">for</span> directory</span><br><span class="line"><span class="built_in">ln</span>: /var/named/dynamic: hard <span class="built_in">link</span> not allowed <span class="keyword">for</span> directory</span><br><span class="line"><span class="built_in">ln</span>: /var/named/slaves: hard <span class="built_in">link</span> not allowed <span class="keyword">for</span> directory</span><br><span class="line">[root@localhost named]# <span class="built_in">mkdir</span> data dynamic slaves</span><br><span class="line">[root@localhost named]# <span class="built_in">chown</span> named:named data dynamic slaves</span><br><span class="line">[root@localhost named]# systemctl start named-chroot</span><br></pre></td></tr></table></figure>
+<p>装好bind-chroot之后需要把原来的文件结构都搞到<code>/var/named/chroot</code>下这个chroot下就是一个服务运行的根，开启时服务名称改为named-chroot，文件结构不管是复制还是剪切都可以只要有对应结构的文件都在就行，我这里做的是硬链接，往后的配置都需要在<code>/var/named/chroot/</code>这个根下面进行。</p>
+<h1 id="BIND-UTILS工具包"><a href="#BIND-UTILS工具包" class="headerlink" title="BIND-UTILS工具包"></a>BIND-UTILS工具包</h1><h2 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost named]# yum -y install bind-utils</span><br></pre></td></tr></table></figure>
+
+<h2 id="nslookup"><a href="#nslookup" class="headerlink" title="nslookup"></a>nslookup</h2><p><strong>非交互式</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">nslookup <span class="string">&quot;解析的域名&quot;</span></span><br><span class="line">[root@localhost ~]# nslookup ns1.host.com</span><br><span class="line">Server:         192.168.0.105</span><br><span class="line">Address:        192.168.0.105#53</span><br><span class="line"></span><br><span class="line">Name:   ns1.host.com</span><br><span class="line">Address: 192.168.0.105</span><br></pre></td></tr></table></figure>
+
+<p><strong>交互式</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# nslookup</span><br><span class="line">&gt; server 192.168.0.105</span><br><span class="line">Default server: 192.168.0.105</span><br><span class="line">Address: 192.168.0.105#53</span><br><span class="line">&gt; www.host.com</span><br><span class="line">Server:         192.168.0.105</span><br><span class="line">Address:        192.168.0.105#53</span><br><span class="line"></span><br><span class="line">Name:   www.host.com</span><br><span class="line">Address: 192.168.0.105</span><br><span class="line">&gt; <span class="built_in">set</span> <span class="built_in">type</span>=SOA</span><br><span class="line">&gt; host.com</span><br><span class="line">Server:         192.168.0.105</span><br><span class="line">Address:        192.168.0.105#53</span><br><span class="line"></span><br><span class="line">host.com</span><br><span class="line">        origin = ns1.host.com</span><br><span class="line">        mail addr = chai.simplefish.cn</span><br><span class="line">        serial = 0</span><br><span class="line">        refresh = 86400</span><br><span class="line">        retry = 86400</span><br><span class="line">        expire = 86400</span><br><span class="line">        minimum = 86400</span><br></pre></td></tr></table></figure>
+
+<h2 id="host"><a href="#host" class="headerlink" title="host"></a>host</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">host -t <span class="string">&quot;类型&quot;</span> <span class="string">&quot;域名&quot;</span> <span class="string">&quot;DNS地址&quot;</span></span><br><span class="line">[root@localhost ~]# host -t A www.host.com 192.168.0.105</span><br><span class="line">Using domain server:</span><br><span class="line">Name: 192.168.0.105</span><br><span class="line">Address: 192.168.0.105#53</span><br><span class="line">Aliases:</span><br><span class="line"></span><br><span class="line">www.host.com has address 192.168.0.105</span><br><span class="line">[root@localhost ~]# host -t ns host.com 192.168.0.105</span><br><span class="line">Using domain server:</span><br><span class="line">Name: 192.168.0.105</span><br><span class="line">Address: 192.168.0.105#53</span><br><span class="line">Aliases:</span><br><span class="line"></span><br><span class="line">host.com name server ns1.host.com.</span><br></pre></td></tr></table></figure>
+
+<h2 id="dig"><a href="#dig" class="headerlink" title="dig"></a>dig</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">dig -t <span class="string">&quot;类型&quot;</span> <span class="string">&quot;域名&quot;</span> @<span class="string">&quot;DNS地址&quot;</span> 参数</span><br><span class="line">+short  返回精简结果</span><br><span class="line">-x      进行逆向域名查询</span><br><span class="line">+noall  忽略全部，不进行输出</span><br><span class="line">+answer 只输出结果，省略过程</span><br><span class="line">+trace：进行迭代查</span><br><span class="line"></span><br><span class="line">[root@localhost ~]# dig -t A www.host.com @192.168.0.105</span><br><span class="line"></span><br><span class="line">; &lt;&lt;&gt;&gt; DiG 9.11.26-RedHat-9.11.26-6.el8 &lt;&lt;&gt;&gt; -t A www.host.com @192.168.0.105</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- <span class="string">opcode: QUERY, status: NOERROR, id: 47724</span></span><br><span class="line"><span class="string">;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 2</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; OPT PSEUDOSECTION:</span></span><br><span class="line"><span class="string">; EDNS: version: 0, flags:; udp: 1232</span></span><br><span class="line"><span class="string">; COOKIE: d97935613cf3169f270c53e061ed0fe27016722968769c4a (good)</span></span><br><span class="line"><span class="string">;; QUESTION SECTION:                           //说明查询内容</span></span><br><span class="line"><span class="string">;www.host.com.                  IN      A</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; ANSWER SECTION:                             //查询结果</span></span><br><span class="line"><span class="string">www.host.com.           60      IN      A       192.168.0.105</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; AUTHORITY SECTION:                          //查询附加内容</span></span><br><span class="line"><span class="string">host.com.               600     IN      NS      ns1.host.com.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; ADDITIONAL SECTION:                         //查询附加内容</span></span><br><span class="line"><span class="string">ns1.host.com.           60      IN      A       192.168.0.105</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">;; Query time: 0 msec</span></span><br><span class="line"><span class="string">;; SERVER: 192.168.0.105#53(192.168.0.105)</span></span><br><span class="line"><span class="string">;; WHEN: Sun Jan 23 03:20:50 EST 2022</span></span><br><span class="line"><span class="string">;; MSG SIZE  rcvd: 119</span></span><br><span class="line"><span class="string">[root@localhost ~]# dig -t A www.host.com @192.168.0.105 +short</span></span><br><span class="line"><span class="string">192.168.0.105</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="nsupdate"><a href="#nsupdate" class="headerlink" title="nsupdate"></a>nsupdate</h2><p>nsupdate是用来添加和删除记录，不支持修改记录。使用方法只能是交互式使用。使用命令前需要把区域的allow-update参数修改一下，改成使用nsupdate主机的ip即可。可以使用acl。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# <span class="built_in">tail</span> -n5 /etc/named.rfc1912.zones</span><br><span class="line">zone <span class="string">&quot;host.com.&quot;</span> IN &#123;</span><br><span class="line">        <span class="built_in">type</span> master;</span><br><span class="line">        file <span class="string">&quot;host.com.zone&quot;</span>;</span><br><span class="line">        allow-update &#123; 192.168.0.105; &#125;;                 //修改允许动态更新的ip地址</span><br><span class="line">&#125;;</span><br><span class="line">[root@localhost ~]# systemctl restart named              //重启生效</span><br><span class="line">[root@localhost ~]# nsupdate</span><br><span class="line">&gt; server 192.168.0.105                                      //指定DNS服务器地址</span><br><span class="line">&gt; update add server.host.com 60 A 192.168.0.105             //add就是添加 之后写一条记录 记录写法很严格给必须是<span class="string">&quot;记录 TTL 记录类型 记录值&quot;</span></span><br><span class="line">&gt; send                              //更新</span><br><span class="line">&gt; quit                              //退出</span><br><span class="line">[root@localhost ~]# dig -t A server.host.com @192.168.0.105 +short</span><br><span class="line">192.168.0.105</span><br><span class="line">[root@localhost ~]# nsupdate</span><br><span class="line">&gt; server 192.168.0.105</span><br><span class="line">&gt; update del server.host.com                   //del为删除删除记录</span><br><span class="line">&gt; send</span><br><span class="line">&gt; quit</span><br><span class="line">[root@localhost ~]# dig -t A server.host.com @192.168.0.105 +short</span><br></pre></td></tr></table></figure>
+<p>是用这个命令不会在自己创建的记录文件里添加记录，而是会生成一个jnl日志文件，正常编辑为乱码。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost named]# <span class="built_in">cat</span> host.com.zone.jnl</span><br><span class="line">;BIND LOG V9</span><br><span class="line">▒8▒▒JhostcomX6ns1hostcomchai</span><br><span class="line">simplefishcnQ▒Q▒Q▒Q▒JhostcomX6ns1hostcomchai</span><br><span class="line">simplefishcnQ▒Q▒Q▒Q▒serverhostcom&lt;▒i▒JhostcomX6ns1hostcomchai</span><br><span class="line">simplefishcnQ▒Q▒Q▒Q▒serverhostcom&lt;▒iJhostcomX6ns1hostcomchai</span><br><span class="line">simplefishcnQ▒Q▒Q▒Q▒[root@localhost named]#</span><br></pre></td></tr></table></figure>
+
+<h1 id="RNDC管理BIND9"><a href="#RNDC管理BIND9" class="headerlink" title="RNDC管理BIND9"></a>RNDC管理BIND9</h1><p>rndc可以对bind9进行热更新，可以对某个域的解析单独进行重载。使用方法如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# rndc-confgen</span><br><span class="line"><span class="comment"># Start of rndc.conf</span></span><br><span class="line">key <span class="string">&quot;rndc-key&quot;</span> &#123;</span><br><span class="line">        algorithm hmac-md5;</span><br><span class="line">        secret <span class="string">&quot;e7SaG876PM54+/1bRFh/JQ==&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">options &#123;</span><br><span class="line">        default-key <span class="string">&quot;rndc-key&quot;</span>;</span><br><span class="line">        default-server 127.0.0.1;</span><br><span class="line">        default-port 953;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment"># End of rndc.conf</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Use with the following in named.conf, adjusting the allow list as needed:</span></span><br><span class="line"><span class="comment"># key &quot;rndc-key&quot; &#123;</span></span><br><span class="line"><span class="comment">#       algorithm hmac-md5;</span></span><br><span class="line"><span class="comment">#       secret &quot;e7SaG876PM54+/1bRFh/JQ==&quot;;</span></span><br><span class="line"><span class="comment"># &#125;;</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># controls &#123;</span></span><br><span class="line"><span class="comment">#       inet 127.0.0.1 port 953</span></span><br><span class="line"><span class="comment">#               allow &#123; 127.0.0.1; &#125; keys &#123; &quot;rndc-key&quot;; &#125;;</span></span><br><span class="line"><span class="comment"># &#125;;</span></span><br><span class="line"><span class="comment"># End of named.conf</span></span><br></pre></td></tr></table></figure>
+<p>rndc-confgen这个命令会生成两段配置，使用”#”注释的配置字段需要放到服务端的配置文件里，未注释的字段需要放到控制端进行配置。</p>
+<p><strong>服务端配置</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# <span class="built_in">tail</span> -n8 /etc/named.conf</span><br><span class="line">key <span class="string">&quot;rndc-key&quot;</span> &#123;</span><br><span class="line">        algorithm hmac-md5;</span><br><span class="line">        secret <span class="string">&quot;e7SaG876PM54+/1bRFh/JQ==&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line">controls &#123;</span><br><span class="line">        inet 192.168.0.105 port 953                //这个地址需要修改成DNS服务器的主机地址</span><br><span class="line">        allow &#123; any; &#125; keys &#123; <span class="string">&quot;rndc-key&quot;</span>; &#125;;       //这个allow &#123;&#125; 是允许谁来进行操作，我这里写的any意思为全部，不建议这样搞建议写成控制端的ip。</span><br><span class="line">&#125;;</span><br><span class="line">[root@localhost ~]# systemctl restart named</span><br></pre></td></tr></table></figure>
+
+<p><strong>控制端配置</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# <span class="built_in">cat</span> /etc/rndc.conf</span><br><span class="line">key <span class="string">&quot;rndc-key&quot;</span> &#123;</span><br><span class="line">                algorithm hmac-md5;</span><br><span class="line">                secret <span class="string">&quot;e7SaG876PM54+/1bRFh/JQ==&quot;</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">options &#123;</span><br><span class="line">                default-key <span class="string">&quot;rndc-key&quot;</span>;</span><br><span class="line">                default-server 192.168.0.105;</span><br><span class="line">                default-port 953;</span><br><span class="line">&#125;;</span><br><span class="line">[root@localhost ~]# <span class="built_in">rm</span> -rf /etc/rndc.key        //默认系统里会自带一个rndc的key删除即可</span><br><span class="line">[root@localhost ~]# rndc status                     //查看状态，不报错就可以用了</span><br><span class="line">version: BIND 9.11.26-RedHat-9.11.26-6.el8 (Extended Support Version) &lt;<span class="built_in">id</span>:3ff8620&gt;</span><br><span class="line">running on localhost.localdomain: Linux x86_64 4.18.0-305.3.1.el8.x86_64 <span class="comment">#1 SMP Tue Jun 1 16:14:33 UTC 2021</span></span><br><span class="line">boot <span class="keyword">time</span>: Sun, 23 Jan 2022 10:21:45 GMT</span><br><span class="line">last configured: Sun, 23 Jan 2022 10:21:45 GMT</span><br><span class="line">configuration file: /etc/named.conf</span><br><span class="line">CPUs found: 1</span><br><span class="line">worker threads: 1</span><br><span class="line">UDP listeners per interface: 1</span><br><span class="line">number of zones: 104 (97 automatic)</span><br><span class="line">debug level: 0</span><br><span class="line">xfers running: 0</span><br><span class="line">xfers deferred: 0</span><br><span class="line">soa queries <span class="keyword">in</span> progress: 0</span><br><span class="line">query logging is OFF</span><br><span class="line">recursive clients: 0/900/1000</span><br><span class="line">tcp clients: 3/150</span><br><span class="line">TCP high-water: 3</span><br><span class="line">server is up and running</span><br></pre></td></tr></table></figure>
+<p>这是基本的配置，使用方式如下</p>
+<p><strong>不允许动态更新的域</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">allow-update &#123; none; &#125;;    //配置区域的时候这个参数为none</span><br><span class="line">[root@localhost ~]# dig -t A a.host.com @192.168.0.105 +short</span><br><span class="line">[root@localhost ~]# <span class="built_in">echo</span> <span class="string">&quot;a                       A       192.168.0.105&quot;</span> &gt;&gt; /var/named/host.com.zone</span><br><span class="line">[root@localhost ~]# rndc reload host.com</span><br><span class="line">zone reload queued</span><br><span class="line">[root@localhost ~]# dig -t A a.host.com @192.168.0.105 +short</span><br><span class="line">192.168.0.105</span><br></pre></td></tr></table></figure>
+
+<p><strong>允许动态更新的域</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">allow-update &#123; IP; &#125;;    //配置区域的时候这个参数有内容</span><br><span class="line">[root@localhost ~]# dig -t A b.host.com @192.168.0.105 +short</span><br><span class="line">[root@localhost ~]# <span class="built_in">echo</span> <span class="string">&quot;b                       A       192.168.0.105&quot;</span> &gt;&gt; /var/named/host.com.zone</span><br><span class="line">[root@localhost ~]# rndc freeze host.com     //冻结这个动态域</span><br><span class="line">[root@localhost ~]# rndc reload host.com     //重载</span><br><span class="line">zone reload queued</span><br><span class="line">[root@localhost ~]# rndc thaw host.com       //启用动态域</span><br><span class="line">The zone reload and thaw was successful.</span><br><span class="line">[root@localhost ~]# dig -t A b.host.com @192.168.0.105 +short</span><br><span class="line">192.168.0.105</span><br></pre></td></tr></table></figure>
+
+<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><h2 id="宏定义写法"><a href="#宏定义写法" class="headerlink" title="宏定义写法"></a>宏定义写法</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$ORIGIN</span> .                            //宏定义根域</span><br><span class="line"><span class="variable">$TTL</span> 600        ; 10 minutes         //宏定义TTL值</span><br><span class="line">//定义之后的就可以不用谢TTL和根域了，就和这条SOA记录一样，他会自动的在域名后面加根域和TTL</span><br><span class="line">host.com                IN SOA  ns1.host.com. chai.simplefish.cn. (</span><br><span class="line">                                2          ; serial</span><br><span class="line">                                86400      ; refresh (1 day)</span><br><span class="line">                                86400      ; retry (1 day)</span><br><span class="line">                                86400      ; expire (1 day)</span><br><span class="line">                                86400      ; minimum (1 day)</span><br><span class="line">                                )</span><br><span class="line">                        NS      ns1.host.com.</span><br><span class="line"><span class="variable">$ORIGIN</span> host.com.                          //重新定义域名</span><br><span class="line"><span class="variable">$TTL</span> 60 ; 1 minute                         //重新定义TTL</span><br><span class="line">dns                     A       192.168.0.105      //域名则可以省略掉宏定义的内容</span><br><span class="line">ns1                     A       192.168.0.105</span><br><span class="line">www                     A       192.168.0.105</span><br></pre></td></tr></table></figure>
+
+<h2 id="如何验证我的配置？"><a href="#如何验证我的配置？" class="headerlink" title="如何验证我的配置？"></a>如何验证我的配置？</h2><p>使用nslookup，host，dig，ping都可以来验证自己配置的DNS服务器，如果服务器可以重启依旧不同则可以依次检查服务器的防火墙、网络互通性、客户端的DNS是否为服务端来解决问题。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/DNS/" rel="tag"># DNS</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1/" rel="tag"># 网络服务</a>
+              <a href="/tags/Bind9/" rel="tag"># Bind9</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/03/05/Ansible-%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4%E5%B7%A5%E5%85%B7/" rel="next" title="Ansible-自动化运维工具">
+                  Ansible-自动化运维工具 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/01/21/BIND9-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

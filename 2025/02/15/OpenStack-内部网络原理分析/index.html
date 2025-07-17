@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="前言 基于组件理解文章，这里单独做一个对于openstack网络组件Neutron的理解，本文只是我自己对于它的理解，因为网上的资料比较有限，本文只能代表我个人理解，有不对的地方欢迎大佬指正。我的环境是Linux Bridge + VXLAN的形式，具体的配置体现可以参考搭建文章的下面内容  官方文档-1： https:&#x2F;&#x2F;docs.openstack.org&#x2F;neutron&#x2F;stein&#x2F;inst">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenStack-内部网络原理分析">
+<meta property="og:url" content="https://blog.boychai.xyz/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="前言 基于组件理解文章，这里单独做一个对于openstack网络组件Neutron的理解，本文只是我自己对于它的理解，因为网上的资料比较有限，本文只能代表我个人理解，有不对的地方欢迎大佬指正。我的环境是Linux Bridge + VXLAN的形式，具体的配置体现可以参考搭建文章的下面内容  官方文档-1： https:&#x2F;&#x2F;docs.openstack.org&#x2F;neutron&#x2F;stein&#x2F;inst">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215141929.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215143526.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215143547.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215143955.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215163534.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215165908.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217154812.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217160721.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217160703.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217160622.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217160541.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217160531.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217193639.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217202736.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217211239.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250216180004.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250216180129.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250216191338.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250216192205.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250216195031.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217211208.png">
+<meta property="og:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250217211517.png">
+<meta property="article:published_time" content="2025-02-15T15:05:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.600Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="开源工具">
+<meta property="article:tag" content="OpenStack">
+<meta property="article:tag" content="Provider">
+<meta property="article:tag" content="VXLAN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/img/Pasted%20image%2020250215141929.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/","path":"2025/02/15/OpenStack-内部网络原理分析/","title":"OpenStack-内部网络原理分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>OpenStack-内部网络原理分析 | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BE%9B%E5%BA%94%E5%95%86-Provider%E7%BD%91%E7%BB%9C"><span class="nav-number">2.</span> <span class="nav-text">供应商-Provider网络</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A9%E5%BC%8F-Vxlan%E7%BD%91%E7%BB%9C"><span class="nav-number">3.</span> <span class="nav-text">自助式-Vxlan网络</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">思考总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8FLAT%E7%BD%91%E7%BB%9C%E4%B8%AD%E5%86%85%E9%83%A8%E5%92%8C%E5%A4%96%E9%83%A8%E7%9A%84DHCP%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E4%BB%A5%E5%81%9A%E5%88%B0%E4%BA%92%E4%B8%8D%E5%B9%B2%E9%A2%84%EF%BC%9F"><span class="nav-number">4.1.</span> <span class="nav-text">在FLAT网络中内部和外部的DHCP为什么可以做到互不干预？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%A4%E5%B1%82%E7%BD%91%E6%A1%A5%E7%BD%91%E6%A1%A5%E5%92%8COpenStack%E4%B8%AD%E7%9A%84%E6%A6%82%E5%BF%B5%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB"><span class="nav-number">4.2.</span> <span class="nav-text">两层网桥网桥和OpenStack中的概念对应关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%A4%E4%BA%86VXLAN%E7%9A%84%E5%AE%9E%E7%8E%B0%E8%BF%98%E6%9C%89%E5%85%B6%E4%BB%96%E7%9A%84%E5%90%97%EF%BC%9F"><span class="nav-number">4.3.</span> <span class="nav-text">除了VXLAN的实现还有其他的吗？</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="OpenStack-内部网络原理分析 | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenStack-内部网络原理分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-02-15 15:05:00" itemprop="dateCreated datePublished" datetime="2025-02-15T15:05:00+00:00">2025-02-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96%E5%B9%B3%E5%8F%B0/" itemprop="url" rel="index"><span itemprop="name">虚拟化平台</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>27 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>基于组件理解文章，这里单独做一个对于openstack网络组件<code>Neutron</code>的理解，本文只是我自己对于它的理解，因为网上的资料比较有限，本文只能代表我个人理解，有不对的地方欢迎大佬指正。我的环境是<code>Linux Bridge</code> + <code>VXLAN</code>的形式，具体的配置体现可以参考搭建文章的下面内容</p>
+<blockquote>
+<p>官方文档-1： <a target="_blank" rel="noopener" href="https://docs.openstack.org/neutron/stein/install/controller-install-rdo.html">https://docs.openstack.org/neutron/stein/install/controller-install-rdo.html</a><br>官方文档-2： <a target="_blank" rel="noopener" href="https://docs.openstack.org/neutron/stein/install/controller-install-option1-rdo.html">https://docs.openstack.org/neutron/stein/install/controller-install-option1-rdo.html</a><br>官方文档-3： <a target="_blank" rel="noopener" href="https://docs.openstack.org/neutron/stein/install/controller-install-option2-rdo.html">https://docs.openstack.org/neutron/stein/install/controller-install-option2-rdo.html</a><br>linux bridge： <a href="https://blog.boychai.xyz/index.php/archives/83/">https://blog.boychai.xyz/index.php/archives/83/</a> (网站已被迁移，请在本站搜索 OpenStack-Stein版搭建-1控制1计算)<br>VXLAN： <a href="https://blog.boychai.xyz/index.php/archives/88/">https://blog.boychai.xyz/index.php/archives/88/</a> (网站已被迁移，请在本站搜索 OpenStack-网络-FLAT与VXLAN)</p>
+</blockquote>
+<h1 id="供应商-Provider网络"><a href="#供应商-Provider网络" class="headerlink" title="供应商-Provider网络"></a>供应商-Provider网络</h1><p>在没有创建<code>Self-service networks</code>网络的的时候，创建一个主机参考下面openstack网络拓扑<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250215141929.png"><br>网络相关的信息如下<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250215143526.png"><br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250215143547.png"><br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250215143955.png"><br>主机未开机的时候，在网络控制节点的网络情况是这样的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip <span class="built_in">link</span></span><br><span class="line">......</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">8: tapa98eeb82-7a@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:04:25:5a:e2:67 brd ff:ff:ff:ff:ff:ff link-netnsid 2</span><br><span class="line">9: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">[root@controller ~]# brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">brqdd604587-35          8000.000c2908b59e       no              ens33</span><br><span class="line">                                                        tapa98eeb82-7a</span><br><span class="line">[root@controller ~]# ip a</span><br><span class="line">......</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::ad6b:bdb0:9b14:c54d/64 scope <span class="built_in">link</span> noprefixroute</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">8: tapa98eeb82-7a@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master brqdd604587-35 state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:04:25:5a:e2:67 brd ff:ff:ff:ff:ff:ff link-netnsid 2</span><br><span class="line">9: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.0.0.11/24 brd 10.0.0.255 scope global brqdd604587-35</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::d061:3cff:fedd:3f85/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">[root@controller ~]# ip netns</span><br><span class="line">qdhcp-dd604587-3542-409b-9ca8-eed06840fb55 (<span class="built_in">id</span>: 2)</span><br><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qdhcp-dd604587-3542-409b-9ca8-eed06840fb55 ip a</span><br><span class="line">...</span><br><span class="line">2: ns-a98eeb82-7a@if8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:53:6f:70 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.0.0.200/24 brd 10.0.0.255 scope global ns-a98eeb82-7a</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet 169.254.169.254/16 brd 169.254.255.255 scope global ns-a98eeb82-7a</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe53:6f70/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>在对应实例的计算节点网络是这样的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# ip <span class="built_in">link</span></span><br><span class="line">......</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">6: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">[root@compute1 ~]# brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">brqdd604587-35          8000.000c29a8d7e0       no              ens33</span><br><span class="line">[root@compute1 ~]# ip a</span><br><span class="line">......</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::ad6b:bdb0:9b14:c54d/64 scope <span class="built_in">link</span> tentative noprefixroute dadfailed</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::5597:3a9:a4bd:ae3a/64 scope <span class="built_in">link</span> noprefixroute</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">6: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.0.0.31/24 brd 10.0.0.255 scope global brqdd604587-35</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>可以看到网络的id<code>dd604587-3542-409b-9ca8-eed06840fb55</code>会在网络控制节点和实例对应计算节点上创建一个网卡，并且取id的前10位作为网卡的名字，即<code>brqdd604587-35</code>，然后就是网络中的端口，可以参考上面网络端口的图片，上面有一个<code>network:dhcp</code>的端口，我感觉这个可以理解为在这个网络上的设备，这个dhcp的端口的名字为<code>a98eeb82-7abe</code>，可以对为网络控制节点中的<code>netns(网络命名空间)</code>，里面的一个设备<code>ns-a98eeb82-7a@if8</code>命名格式也是前10位，可以知道这个接口是当前网络中的DHCP服务，其中这个设备通过<code>link-netnsid</code>和<code>@if8</code>的标识可以判断出他是一个虚拟接口<code>(veth pair对)</code>，通过<code>@if8</code>可以看出他是从主机的<code>tapa98eeb82-7a</code>网卡接出来的，<code>tapa98eeb82-7a</code>是网桥<code>brqdd604587-35</code>中的接口。然后当前两台机器的网桥<code>brctl show</code>中可以看到<code>brqdd604587-35</code>都是<code>ens33</code>的网桥。当前它们的网络架构如下<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250215163534.png"><br>当实例开机，他们的网络情况会变会变成下面这样，网络控制节情况如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip <span class="built_in">link</span></span><br><span class="line">......</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">8: tapa98eeb82-7a@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:04:25:5a:e2:67 brd ff:ff:ff:ff:ff:ff link-netnsid 2</span><br><span class="line">9: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">[root@controller ~]# brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">brqdd604587-35          8000.000c2908b59e       no              ens33</span><br><span class="line">                                                        tapa98eeb82-7a</span><br><span class="line">[root@controller ~]# ip a</span><br><span class="line">......</span><br><span class="line">8: tapa98eeb82-7a@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master brqdd604587-35 state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:04:25:5a:e2:67 brd ff:ff:ff:ff:ff:ff link-netnsid 2</span><br><span class="line">9: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.0.0.11/24 brd 10.0.0.255 scope global brqdd604587-35</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::d061:3cff:fedd:3f85/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">[root@controller ~]# ip netns</span><br><span class="line">qdhcp-dd604587-3542-409b-9ca8-eed06840fb55 (<span class="built_in">id</span>: 2)</span><br><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qdhcp-dd604587-3542-409b-9ca8-eed06840fb55 ip a</span><br><span class="line">......</span><br><span class="line">2: ns-a98eeb82-7a@if8: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:53:6f:70 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.0.0.200/24 brd 10.0.0.255 scope global ns-a98eeb82-7a</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet 169.254.169.254/16 brd 169.254.255.255 scope global ns-a98eeb82-7a</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe53:6f70/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>在对应实例的计算节点中他的网络变成了这样</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# ip <span class="built_in">link</span></span><br><span class="line">......</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">6: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">8: tap76c0c08c-79: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UNKNOWN mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fe:16:3e:4d:6a:b1 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">[root@compute1 ~]# brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">brqdd604587-35          8000.000c29a8d7e0       no              ens33</span><br><span class="line">                                                        tap76c0c08c-79</span><br><span class="line">[root@compute1 ~]# ip a</span><br><span class="line">......</span><br><span class="line">6: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.0.0.31/24 brd 10.0.0.255 scope global brqdd604587-35</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">8: tap76c0c08c-79: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UNKNOWN group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fe:16:3e:4d:6a:b1 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::fc16:3eff:fe4d:6ab1/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>改变主要是在计算节点，在计算节点中他的网桥关联了一个新的接口<code>tap76c0c08c-79</code>,这个接口是怎么来的呢，可以参考虚机的配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# virsh list</span><br><span class="line"> Id    Name                           State</span><br><span class="line">----------------------------------------------------</span><br><span class="line"> 3     instance-00000010              running</span><br><span class="line">[root@compute1 ~]# <span class="built_in">cd</span> /etc/libvirt/qemu/</span><br><span class="line">[root@compute1 qemu]# <span class="built_in">ls</span></span><br><span class="line">instance-00000010.xml  networks</span><br></pre></td></tr></table></figure>
+<p>在<code>instance-00000010.xml</code>中，网络接口相关配置如下</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">interface</span> <span class="attr">type</span>=<span class="string">&#x27;bridge&#x27;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">mac</span> <span class="attr">address</span>=<span class="string">&#x27;fa:16:3e:4d:6a:b1&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">mac</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">source</span> <span class="attr">bridge</span>=<span class="string">&#x27;brqdd604587-35&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">target</span> <span class="attr">dev</span>=<span class="string">&#x27;tap76c0c08c-79&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">model</span> <span class="attr">type</span>=<span class="string">&#x27;virtio&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">model</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">mtu</span> <span class="attr">size</span>=<span class="string">&#x27;1500&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">mtu</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">address</span> <span class="attr">type</span>=<span class="string">&#x27;pci&#x27;</span> <span class="attr">domain</span>=<span class="string">&#x27;0x0000&#x27;</span> <span class="attr">bus</span>=<span class="string">&#x27;0x00&#x27;</span> <span class="attr">slot</span>=<span class="string">&#x27;0x03&#x27;</span> <span class="attr">function</span>=<span class="string">&#x27;0x0&#x27;</span>&gt;</span><span class="tag">&lt;/<span class="name">address</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>它基于<code>brqdd604587-35</code>做了一个桥接的虚拟接口到<code>tap76c0c08c-79</code>提供给虚机用。现在的网络架构如下<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250215165908.png"><br>从<a href="https://blog.boychai.xyz/index.php/archives/93/">组件理解</a>中可以知道，当前的这个供应商网络<code>provider</code>在实际通信中只是做了一层网络映射，映射到实际网络中，我们这里其实可以理解为虚机是直连在这个外部交换机上的，出现问题可以参考一下思考总结里的实验。</p>
+<h1 id="自助式-Vxlan网络"><a href="#自助式-Vxlan网络" class="headerlink" title="自助式-Vxlan网络"></a>自助式-Vxlan网络</h1><p><code>Self-service networks</code>的VXLAN网络，网络拓扑拓扑如下<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217154812.png"><br>网络相关配置如下<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217160721.png"><br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217160703.png"><br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217160622.png"><br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217160541.png"><br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217160531.png"><br>开启主机去看网络信息，在控制节点的网络信息如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip <span class="built_in">link</span></span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">4: ens37: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:b2 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">7: tap7cb3b509-23@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 9a:4f:c8:45:64:e7 brd ff:ff:ff:ff:ff:ff link-netnsid 1</span><br><span class="line">8: vxlan-1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UNKNOWN mode DEFAULT</span><br><span class="line">group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:b6:1f:77:c4:1b brd ff:ff:ff:ff:ff:ff</span><br><span class="line">9: brq7f850748-2d: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:b6:1f:77:c4:1b brd ff:ff:ff:ff:ff:ff</span><br><span class="line">10: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen</span><br><span class="line">1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">14: tapf00694f6-24@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 5a:b6:d1:fe:08:64 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">15: tap31b0feaa-20@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 3e:f5:9d:44:57:29 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">[root@controller ~]# ip a</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::ad6b:bdb0:9b14:c54d/64 scope <span class="built_in">link</span> noprefixroute</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">4: ens37: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:b2 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 172.16.0.11/24 brd 172.16.0.255 scope global noprefixroute ens37</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::20c:29ff:fe08:b5b2/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">7: tap7cb3b509-23@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 9a:4f:c8:45:64:e7 brd ff:ff:ff:ff:ff:ff link-netnsid 1</span><br><span class="line">8: vxlan-1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UNKNOWN group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:b6:1f:77:c4:1b brd ff:ff:ff:ff:ff:ff</span><br><span class="line">9: brq7f850748-2d: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:b6:1f:77:c4:1b brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::44b9:8bff:feee:1639/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">10: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:08:b5:9e brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.0.0.11/24 brd 10.0.0.255 scope global brqdd604587-35</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::2073:d5ff:fedc:5d7/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">14: tapf00694f6-24@if2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue master brqdd604587-35 state UP group</span><br><span class="line">default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 5a:b6:d1:fe:08:64 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">15: tap31b0feaa-20@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UP group</span><br><span class="line">default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 3e:f5:9d:44:57:29 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">[root@controller ~]# ip netns</span><br><span class="line">qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3 (<span class="built_in">id</span>: 0)</span><br><span class="line">qdhcp-7f850748-2d01-4f88-95fa-41b6144b1c02 (<span class="built_in">id</span>: 1)</span><br><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3 ip a</span><br><span class="line">2: qg-f00694f6-24@if14: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:6a:e4:80 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.0.0.208/24 brd 10.0.0.255 scope global qg-f00694f6-24</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe6a:e480/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">3: qr-31b0feaa-20@if15: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:3d:18:d0 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.10.10.1/24 brd 10.10.10.255 scope global qr-31b0feaa-20</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe3d:18d0/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qdhcp-7f850748-2d01-4f88-95fa-41b6144b1c02 ip a</span><br><span class="line">2: ns-7cb3b509-23@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:85:9c:4c brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.10.10.100/24 brd 10.10.10.255 scope global ns-7cb3b509-23</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet 169.254.169.254/16 brd 169.254.255.255 scope global ns-7cb3b509-23</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe85:9c4c/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">[root@controller ~]# brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">brq7f850748-2d          8000.0ab61f77c41b       no              tap31b0feaa-20</span><br><span class="line">                                                        tap7cb3b509-23</span><br><span class="line">                                                        vxlan-1</span><br><span class="line">brqdd604587-35          8000.000c2908b59e       no              ens33</span><br><span class="line">                                                        tapf00694f6-24</span><br></pre></td></tr></table></figure>
+<p>由于内容较多，这里就先把控制节点的结构分析一下先看网桥，他有两个网桥，它与子网的ID是对的上号的，具体可以看看上面的截图，vxlan子网id为<code>7f850748-2d01-4f88-95fa-41b6144b1c02</code>这里的网桥名字就是<code>brq7f850748-2d</code>brq+子网id的前10位，然后我们先看一下<code>brqdd604587-35</code>，这个网络是外部<code>provider</code>网络，他是ens33的网桥，他有一个接口<code>tapf00694f6-24</code>，我们再看一下这个接口，发现在<code>qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3</code>命名空间中一个连接的接口<code>qg-f00694f6-24@if14</code>他的ip是<code>10.0.0.208</code>这里估计是一个出网的IP，他是在<code>provider</code>子网端口中也有记录，具体可以去集群中查看，然后再看一下<code>vxlan-1</code>的网桥<code>brq7f850748-2d</code>，上面除了<code>vxlan-1</code>的接口，还有两个虚拟接口分别是<code>tap31b0feaa-20</code>和<code>tap7cb3b509-23</code>，它们的对端可以在命名空间中找到，<code>tap31b0feaa-20</code>对端在<code>qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3</code>命名空间中，对应的接口名字是<code>qr-31b0feaa-20</code>，他的ip是<code>10.10.10.1</code>，这个ip可以得知是在当前子网的网关，在集群中可以得知的ip，这个命名空间中还有一个接口，它的对端刚好是<code>provider</code>网络的网桥中的接口，我们继续看<code>vxlan-1</code>网络的的个虚拟接口<code>tap7cb3b509-23</code>,他的对端是<code>qdhcp-7f850748-2d01-4f88-95fa-41b6144b1c02</code>命名空间中的<code>ns-7cb3b509-23</code>接口用作DHCP。<br>计算节点的网络信息如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# ip <span class="built_in">link</span></span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">4: ens37: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:f4 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">6: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">7: brq7f850748-2d: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 6e:e5:c4:4f:34:c9 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">8: tap26500e0a-b5: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc pfifo_fast master brq7f850748-2d state UNKNOWN mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fe:16:3e:68:60:74 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">10: vxlan-1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UNKNOWN mode DEFAULT group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 6e:e5:c4:4f:34:c9 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">[root@compute1 ~]# ip a</span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast master brqdd604587-35 state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::ad6b:bdb0:9b14:c54d/64 scope <span class="built_in">link</span> tentative noprefixroute dadfailed</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::5597:3a9:a4bd:ae3a/64 scope <span class="built_in">link</span> tentative noprefixroute dadfailed</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::6f88:d473:e534:aaf9/64 scope <span class="built_in">link</span> tentative noprefixroute dadfailed</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">4: ens37: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:f4 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 172.16.0.31/24 brd 172.16.0.255 scope global noprefixroute ens37</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::20c:29ff:fea8:d7f4/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">6: brqdd604587-35: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 00:0c:29:a8:d7:e0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.0.0.31/24 brd 10.0.0.255 scope global brqdd604587-35</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">7: brq7f850748-2d: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 6e:e5:c4:4f:34:c9 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">8: tap26500e0a-b5: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc pfifo_fast master brq7f850748-2d state UNKNOWN group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fe:16:3e:68:60:74 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet6 fe80::fc16:3eff:fe68:6074/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">10: vxlan-1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UNKNOWN group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 6e:e5:c4:4f:34:c9 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">[root@compute1 ~]# brctl show</span><br><span class="line">bridge name     bridge <span class="built_in">id</span>               STP enabled     interfaces</span><br><span class="line">brq7f850748-2d          8000.6ee5c44f34c9       no              tap26500e0a-b5</span><br><span class="line">                                                        vxlan-1</span><br><span class="line">brqdd604587-35          8000.000c29a8d7e0       no              ens33</span><br></pre></td></tr></table></figure>
+<p>先看一下网桥，<code>brqdd604587-35</code>是<code>provider</code>网络的一个网桥，这里不多讲，在这个节点并没有使用到他，看一下另外一个网桥<code>brq7f850748-2d</code>，它是<code>vxlan-1</code>设备的网桥，另一个接口<code>tap26500e0a-b5</code>连接在实例中。<br>分析完上面的网络，这里再讲一下<code>vxlan-1</code>这个设备，他是<code>Neutron</code>负责管理的，就以现在的网络拓扑为例，他如果要出外网就需要去找<code>10.10.10.1</code>这个网关，他在控制节点上，他是如何找到它的？而且当前的网络信息，没有设备连接到ens37上，参考上面的引用，再搭建的过程中，这个网络是用来做vxlan的接口，他为啥是一个单独的接口没有任何的关联？这里就要说到vxlan了它们的通信是采用vxlan的方式，当前的拓扑<code>vxlan-1</code>是集群子网<code>brq7f850748-2d</code>网桥的最外层，网桥是桥接的它，在配置他的过程中还有一段配置如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[vxlan]</span><br><span class="line">enable_vxlan = true</span><br><span class="line">local_ip = 172.16.0.31</span><br><span class="line">l2_population = true</span><br></pre></td></tr></table></figure>
+<p>这是在计算节点的配置，这个<code>local_ip</code>是用来封装vxlan的，它定义了vxlan具体使用的网卡，这个ip必须是当前主机的一个ip，而且必须要和对端vxlan设备相通，具体的跨节点数据包发过来之后，他会在数据包的基础上，封装一层，原地址就写这个<code>local_ip</code>，对端的ip则会写<code>FDB</code>表对应的IP，<br>这个对应表是通过<code>L2 Population</code>去发现，也有其他实现的方法(组播形式)，配置体现也在上面(vxlan配置)，通过命令<code>bridge fdb show dev vxlan-1</code>可以拿到学习到的<code>FDB</code>表，控制节点的内容如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# bridge fdb show dev vxlan-1</span><br><span class="line">0a:b6:1f:77:c4:1b vlan 1 master brq7f850748-2d permanent</span><br><span class="line">0a:b6:1f:77:c4:1b master brq7f850748-2d permanent</span><br><span class="line">00:00:00:00:00:00 dst 172.16.0.31 self permanent</span><br><span class="line">fa:16:3e:68:60:74 dst 172.16.0.31 self permanent</span><br></pre></td></tr></table></figure>
+<p>计算节点的内容如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# bridge fdb show dev vxlan-1</span><br><span class="line">6e:e5:c4:4f:34:c9 vlan 1 master brq7f850748-2d permanent</span><br><span class="line">6e:e5:c4:4f:34:c9 master brq7f850748-2d permanent</span><br><span class="line">00:00:00:00:00:00 dst 172.16.0.11 self permanent</span><br><span class="line">fa:16:3e:85:9c:4c dst 172.16.0.11 self permanent</span><br><span class="line">fa:16:3e:3d:18:d0 dst 172.16.0.11 self permanent</span><br></pre></td></tr></table></figure>
+<p>这里的<code>FDB</code>表内容是，对方mac地址+vxlan设备地址，这些mac具体对应的ip可以在对应的对端网络通过查看arp表获取，例如在控制节点的对应网络中，即<code>qdhcp-7f850748-2d01-4f88-95fa-41b6144b1c02</code>命名空间中的arp表如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3 ip a</span><br><span class="line">......</span><br><span class="line">3: qr-31b0feaa-20@if15: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:3d:18:d0 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.10.10.1/24 brd 10.10.10.255 scope global qr-31b0feaa-20</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe3d:18d0/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3 arp</span><br><span class="line">Address                  HWtype  HWaddress           Flags Mask            Iface</span><br><span class="line">10.10.10.133             ether   fa:16:3e:68:60:74   C                     qr-31b0feaa-20</span><br><span class="line">gateway                  ether   00:50:56:ea:8e:2f   C                     qg-f00694f6-24</span><br></pre></td></tr></table></figure>
+<p>在实例中的对应表如下<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217193639.png"><br>控制节点的ip即当前vxlan网络的网关<code>10.10.10.1</code>mac地址是<code>fa:16:3e:3d:18:d0</code>，实例的ip是<code>10.10.10.133</code>mac地址是<code>fa:16:3e:68:60:74</code>，在对方节点学习到的arp也是如此，当发包的时候这些信息也都会存储在数据包中(<code>不仅仅是当前网络所有的网络都是这样的具体参考计算机网络学科</code>)，vxlan设备会拿到这些信息去查询<code>FDB</code>表，例如在计算点<code>fa:16:3e:3d:18:d0</code>这个mac地址对应的ip是<code>172.16.0.11</code>那么vxlan设备就会在这个数据包的基础上套一层<code>源地址</code>、<code>目的地址</code>、<code>VNI</code>标识等其他信息，这里不细说封装，源地址即<code>linuxbridge_agent</code>配置中的<code>local_ip</code>即<code>172.16.0.31</code>，对应的也会从这个地址的网卡发包，目的地址就是刚才查询到的<code>FDB</code>的地址，即<code>172.16.0.11</code>，然后<code>VNI</code>标识是用来区分网络的，因为所有的数据包都去走这个vxlan的udp端口，具体区分网络的方式就是通过这个<code>VNI</code>标识，封装好相关数据之后会发给对端，具体的对端端口可以通过下面命令获取</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip -d <span class="built_in">link</span> show vxlan-1</span><br><span class="line">8: vxlan-1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue master brq7f850748-2d state UNKNOWN mode DEFAULT</span><br><span class="line">group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether 0a:b6:1f:77:c4:1b brd ff:ff:ff:ff:ff:ff promiscuity 1</span><br><span class="line">    vxlan <span class="built_in">id</span> 1 dev ens37 srcport 0 0 dstport 8472 ageing 300 noudpcsum noudp6zerocsumtx noudp6zerocsumrx</span><br><span class="line">    bridge_slave state forwarding priority 32 cost 100 hairpin off guard off root_block off fastleave off learning on</span><br><span class="line">flood on port_id 0x8001 port_no 0x1 designated_port 32769 designated_cost 0 designated_bridge 8000.a:b6:1f:77:c4:1b designated_root 8000.a:b6:1f:77:c4:1b hold_timer    0.00 message_age_timer    0.00 forward_delay_timer    0.00 topology_change_ack 0 config_pending 0 proxy_arp off proxy_arp_wifi off mcast_router 1 mcast_fast_leave off mcast_flood on addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535</span><br><span class="line">[root@controller ~]# ss -unl|grep 8472</span><br><span class="line">UNCONN     0      0            *:8472                     *:*</span><br></pre></td></tr></table></figure>
+<p>所有有vxlan设备的主机应该都是差不多的，vxlan的标准端口是<code>4789</code>，他这里指定的是<code>8472</code>，这个端口好像是思科的标准，这里的端口是内核负责监听的，所以这里你是不可以通过进程的形式找到他的监听程序的，他拿到数据就会丢到相应的<code>VXLAN</code>设备中这个设备会把这个包的最外层也就是上一个<code>VXLAN</code>设备给封装的相关内容剔除然后进行转发原本的地址，这样就实现了通信。<br>再说一下浮动IP，这里我创建一个浮动IP给当前实例绑定上，如下图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217202736.png"><br>绑定之后发现计算节点的网络信息并没有该边而是在计算节在<code>qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3</code>命名空间中的出网接口增加了一个IP，配置如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3 ip a</span><br><span class="line">2: qg-f00694f6-24@if14: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:6a:e4:80 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.0.0.208/24 brd 10.0.0.255 scope global qg-f00694f6-24</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet 10.0.0.210/32 brd 10.0.0.210 scope global qg-f00694f6-24</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe6a:e480/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">3: qr-31b0feaa-20@if15: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1450 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">    <span class="built_in">link</span>/ether fa:16:3e:3d:18:d0 brd ff:ff:ff:ff:ff:ff link-netnsid 0</span><br><span class="line">    inet 10.10.10.1/24 brd 10.10.10.255 scope global qr-31b0feaa-20</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::f816:3eff:fe3d:18d0/64 scope <span class="built_in">link</span></span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>对应的路由转发相关的规则会在iptables体现，具体参考下面命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qrouter-e651f481-55aa-46a7-aa62-96ef71e5bac3 iptables -t nat -L -n -v|grep 210</span><br><span class="line">    0     0 DNAT       all  --  *      *       0.0.0.0/0            10.0.0.210           to:10.10.10.133</span><br><span class="line">    0     0 DNAT       all  --  *      *       0.0.0.0/0            10.0.0.210           to:10.10.10.133</span><br><span class="line">    0     0 SNAT       all  --  *      *       10.10.10.133         0.0.0.0/0            to:10.0.0.210</span><br></pre></td></tr></table></figure>
+<p>当前网络的结构关系如下图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217211239.png"></p>
+<h1 id="思考总结"><a href="#思考总结" class="headerlink" title="思考总结"></a>思考总结</h1><p>在研究openstack网络<code>Neutron</code>组件的过程中，心里好多疑问，我把它总结到这里，问题以及验证。</p>
+<h2 id="在FLAT网络中内部和外部的DHCP为什么可以做到互不干预？"><a href="#在FLAT网络中内部和外部的DHCP为什么可以做到互不干预？" class="headerlink" title="在FLAT网络中内部和外部的DHCP为什么可以做到互不干预？"></a>在FLAT网络中内部和外部的DHCP为什么可以做到互不干预？</h2><p>这个问题其实并不严谨，我当时是上面<code>供应商-Provider网络</code>的结构，我外部是采用VMware的NAT网络，我给开了一个内部DHCP，配置如图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250216180004.png"><br>然而我FLAT的子网中也配置了一个<code>DHCP-Agent</code>,如下图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250216180129.png"><br>我发现它们两个DHCP互不干预，当子网的DHCP关闭，对应子网内的实例是无法通过外部DHCP获取IP的，然后外部的DHCP关掉，内部的打开，外部的对应网络下的虚机也是无法通过内部DHCP获取到IP的。各种文档解释<code>FLAT</code>网络都是相当于直连，但是为什么当前的的环境下DHCP不互通？而且我内部甚至可以使用外部的网关进行上网？我查了好多文章都没发现有人说这个的，我就进入虚机自己分析了，我最开始怀疑他做了内部隔离，就是两个广播域，他通过软件的方式去做映射，我通过把内部子网DHCP关掉，这样内部的实例就会去播报arp宣告，我发现不管是那台主机去抓包都会拿到他广播的数据包，并且外部的DHCP是回复了他的数据包的，这就很奇怪，如下图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250216191338.png"><br>首先是第一个红框的内容，实例发送了DHCP广播<code>Discover</code>包，然而<code>10.0.0.254</code>明明给他了一个ip<code>10.0.0.254</code>但是后续就没了，按照正常顺序他应该回复一个<code>DHCP Request</code>的一个确认数据包，但是他这里没后续，并且继续去广播<code>Discover</code>包，而且他依旧回复了，给他了一个<code>10.0.0.161</code>，中途外部的DHCP一直广播ARP谁是这个他分配的这个<code>ip</code>一直也没有得到回复，后续一直再重复这个过程，这里可以判断出它们确实都在一个广播域中，只是客户端一直没去使用外部DHCP，在openstack网络结构中这一层的网桥(我这里叫做第二层网桥)，如图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250216192205.png"><br>他有一个数据包过滤的作用，这里去计算节点中查看iptables过滤规则，发现了端倪，规则如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# iptables-save | grep -E <span class="string">&#x27;67|68&#x27;</span></span><br><span class="line">:INPUT ACCEPT [127064:177468678]</span><br><span class="line">-A neutron-linuxbri-i76c0c08c-7 -d 10.0.0.206/32 -p udp -m udp --sport 67 --dport 68 -j RETURN</span><br><span class="line">-A neutron-linuxbri-i76c0c08c-7 -d 255.255.255.255/32 -p udp -m udp --sport 67 --dport 68 -j RETURN</span><br><span class="line">-A neutron-linuxbri-o76c0c08c-7 -s 0.0.0.0/32 -d 255.255.255.255/32 -p udp -m udp --sport 68 --dport 67 -m comment --comment <span class="string">&quot;Allow DHCP client traffic.&quot;</span> -j RETURN</span><br><span class="line">-A neutron-linuxbri-o76c0c08c-7 -p udp -m udp --sport 68 --dport 67 -m comment --comment <span class="string">&quot;Allow DHCP client traffic.&quot;</span></span><br><span class="line">-j RETURN</span><br><span class="line">-A neutron-linuxbri-o76c0c08c-7 -p udp -m udp --sport 67 --dport 68 -m comment --comment <span class="string">&quot;Prevent DHCP Spoofing by VM.&quot;</span> -j DROP</span><br></pre></td></tr></table></figure>
+<p>比较重要的是这两条规则，第一条规则如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-A neutron-linuxbri-i76c0c08c-7 -d 10.0.0.206/32 -p udp -m udp --sport 67 --dport 68 -j RETURN</span><br></pre></td></tr></table></figure>
+<p>第一条规则是当DHCP分配的地址是<code>10.0.0.206</code>的话则把这条丢到原链上的，即原本的<code>INPUT</code>、<code>OUTPUT</code>中只要是放行的则这条就是通过，去看了看原链上的规则就是<code>ACCEPT</code>,规则如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@compute1 ~]# iptables -L</span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br><span class="line">neutron-linuxbri-INPUT  all  --  anywhere             anywhere</span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br><span class="line">neutron-filter-top  all  --  anywhere             anywhere</span><br><span class="line">neutron-linuxbri-FORWARD  all  --  anywhere             anywhere</span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br><span class="line">neutron-filter-top  all  --  anywhere             anywhere</span><br><span class="line">neutron-linuxbri-OUTPUT  all  --  anywhere             anywhere</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p>那就是说他这个实例允许收到这个ip的DHCP回包。再去看第二条，规则如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-A neutron-linuxbri-o76c0c08c-7 -p udp -m udp --sport 67 --dport 68 -m comment --comment <span class="string">&quot;Prevent DHCP Spoofing by VM.&quot;</span> -j DROP</span><br></pre></td></tr></table></figure>
+<p>iptables的规则是从上到下去匹配的，如果不符合上面<code>206</code>的规则那么这条将会丢弃所有DHCP的<code>Offer</code>包，就导致不管子网内的主机有没有配置DHCP，都没办法使用外部的DHCP。好，现在第一个疑问解决了，再看第二个为什么内部DHCP开启没办法给外部主机分配DHCP，我直接把VMware的DHCP关掉，关掉之后开一台这个网络的虚机，让他去通过DHCP获取IP，然后我在控制节点对应QDHCP的命名空间中去抓QDHCP的网卡，当外部主机区获取IP的时候抓到了下面的数据，如图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250216195031.png"><br>发现他一直在发包DHCP的<code>Discover</code>包，一直在广播域中去找DHCP拿ip，但是<code>QDHCP</code>并没有回应他，到这里我就已经明白了，<code>Neutron</code>他自己维护的DHCP只会对集群自己的管理的实例进行服务，实现的方式估计也是通过MAC地址实现过滤，当符合他ip的MAC则就分配这个ip，如果不符合那么就不作为，具体可以参考他QDHCP实现软件的相关配置，我默认配置的DHCP-Agent实现方式如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# <span class="built_in">cat</span> /etc/neutron/dhcp_agent.ini</span><br><span class="line">[DEFAULT]</span><br><span class="line">interface_driver = linuxbridge</span><br><span class="line">dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq</span><br><span class="line">enable_isolated_metadata = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>他的实现是采用<code>Dnsmasq</code>软件，我们去看一下他的启动参数，通过下面的命令拿到</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# ip netns <span class="built_in">exec</span> qdhcp-dd604587-3542-409b-9ca8-eed06840fb55 ps aux |grep dnsmasq</span><br><span class="line">nobody     7584  0.0  0.0  56128  1068 ?        S    17:22   0:00 dnsmasq --no-hosts --no-resolv --pid-file=/var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/pid --dhcp-hostsfile=/var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/host --addn-hosts=/var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/addn_hosts --dhcp-optsfile=/var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/opts --dhcp-leasefile=/var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/leases --dhcp-match=<span class="built_in">set</span>:ipxe,175 --dhcp-userclass=<span class="built_in">set</span>:ipxe6,iPXE --local-service --bind-dynamic --dhcp-range=<span class="built_in">set</span>:subnet-69611b38-36b5-4e98-b47e-949c2137dbe1,10.0.0.0,static,255.255.255.0,86400s --dhcp-option-force=option:mtu,1500 --dhcp-lease-max=256 --conf-file= --domain=openstacklocal</span><br></pre></td></tr></table></figure>
+<p>具体的这些参数可以自己GPT，我这里说一下软件是怎么实现的这个功能，他的行参中有一项<code>--dhcp-hostsfile=/var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/host</code>，这个参数的作用是加载一个 预定义的 MAC-IP 映射文件，仅响应文件中列出的 MAC 地址的 DHCP 请求。这个文件是由<code>neutron</code>去管理，内容可以查看一下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@controller ~]# <span class="built_in">cat</span> /var/lib/neutron/dhcp/dd604587-3542-409b-9ca8-eed06840fb55/host</span><br><span class="line">fa:16:3e:4d:6a:b1,host-10-0-0-206.openstacklocal,10.0.0.206</span><br><span class="line">fa:16:3e:cb:5e:78,host-10-0-0-200.openstacklocal,10.0.0.200</span><br></pre></td></tr></table></figure>
+<p>这里就存着他自己和我的实例的对应表。到这里这个问题就清晰了，互不干预的原因是因为它内部有过滤规则和相应条件，内部只会把内部的DHCP包交给实例，否则会过滤掉，并且内部的DHCP不会去响应外部机器的<code>Discover</code>包。</p>
+<h2 id="两层网桥网桥和OpenStack中的概念对应关系"><a href="#两层网桥网桥和OpenStack中的概念对应关系" class="headerlink" title="两层网桥网桥和OpenStack中的概念对应关系"></a>两层网桥网桥和OpenStack中的概念对应关系</h2><p>具体参考下图，具体的实验可以通过在同网络下一个子网一个实例，一个一个去增加实例和子网网络等操作，去节点中查看他们的网络ip网卡网桥对应表。<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217211208.png"></p>
+<h2 id="除了VXLAN的实现还有其他的吗？"><a href="#除了VXLAN的实现还有其他的吗？" class="headerlink" title="除了VXLAN的实现还有其他的吗？"></a>除了VXLAN的实现还有其他的吗？</h2><p>有的兄弟，有的，VLAN、VXLAN、GRE、Flat、Geneve、Local，如图<br><img src="https://image.boychai.xyz/img/Pasted%20image%2020250217211517.png"><br>它们的区别这里大体讲一下</p>
+<ul>
+<li>VLAN 我记得VLAN是有数量限制的，应该是4096个，如果采用VLAN的形式还需要在对应的网络设备接口中打<code>Trunk</code>需要配合。</li>
+<li>VXLAN 它支持16M的网络数量，可以说是基本用不完，还可以跨数据中心，他就有一点缺点，他需要多一层数据封包，多了额外的计算资源的开销。</li>
+<li>GRE 这是个隧道协议，它可以跨多个物理网络，并且支持协议也多灵活度也高，但是他不提供数据加密，通常需要配合<code>IPsec</code>，还有就是带宽和性能受到隧道负载的影响。</li>
+<li>Flat 不多说了 就是直连网络，而且没有网络隔离。</li>
+<li>Geneve 这个比VXLAN更加优秀，但是他比较新，还没有普及。</li>
+<li>Local 虚机想要通信必须在同一个主机并且同一个Local网络中，条件苛刻，但是比较安全。</li>
+</ul>
+<p>要注意的是，在配置这些网络的时候请在配置中设置支持，配置参考<code>/etc/neutron/plugins/ml2/ml2_conf.ini</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type_drivers = flat,vlan,vxlan</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%BC%80%E6%BA%90%E5%B7%A5%E5%85%B7/" rel="tag"># 开源工具</a>
+              <a href="/tags/OpenStack/" rel="tag"># OpenStack</a>
+              <a href="/tags/Provider/" rel="tag"># Provider</a>
+              <a href="/tags/VXLAN/" rel="tag"># VXLAN</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/" rel="prev" title="OpenStack-命令控制">
+                  <i class="fa fa-angle-left"></i> OpenStack-命令控制
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/03/10/8086CPU%E6%B1%87%E7%BC%96%E5%AD%A6%E4%B9%A0/" rel="next" title="8086CPU汇编学习">
+                  8086CPU汇编学习 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2025/02/15/OpenStack-%E5%86%85%E9%83%A8%E7%BD%91%E7%BB%9C%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

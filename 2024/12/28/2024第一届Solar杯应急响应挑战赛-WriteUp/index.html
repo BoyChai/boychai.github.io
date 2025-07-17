@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="前言 CTF是数据库4-5、逆向破解-1、综合应急-2未解出，然后理论是Windows的应急响应,就拿到了300,这个成绩和排名真的是非常的可惜。最终成绩是49名拿到了一个优秀奖。     签到 本题作为签到题,请给出邮服发件顺序。   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   Received: from mail.da4s8gag.com ([140.1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2024第一届Solar杯应急响应挑战赛-WriteUp">
+<meta property="og:url" content="https://blog.boychai.xyz/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="前言 CTF是数据库4-5、逆向破解-1、综合应急-2未解出，然后理论是Windows的应急响应,就拿到了300,这个成绩和排名真的是非常的可惜。最终成绩是49名拿到了一个优秀奖。     签到 本题作为签到题,请给出邮服发件顺序。   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   Received: from mail.da4s8gag.com ([140.1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20241228165801.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20241228165633.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20250103144907.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228161147.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228161129.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228105457.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228105530.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228105504.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228105946.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228110008.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228113008.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228132602.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228132844.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228125352.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228125523.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020241228125909.png">
+<meta property="article:published_time" content="2024-12-28T18:00:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.597Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="WriteUp">
+<meta property="article:tag" content="WEB">
+<meta property="article:tag" content="CRYPTO">
+<meta property="article:tag" content="Forensics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20241228165801.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/","path":"2024/12/28/2024第一届Solar杯应急响应挑战赛-WriteUp/","title":"2024第一届Solar杯应急响应挑战赛-WriteUp"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2024第一届Solar杯应急响应挑战赛-WriteUp | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AD%BE%E5%88%B0"><span class="nav-number">2.</span> <span class="nav-text">签到</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%B5%81%E9%87%8F-1"><span class="nav-number">3.</span> <span class="nav-text">日志流量-1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%B5%81%E9%87%8F-2"><span class="nav-number">4.</span> <span class="nav-text">日志流量-2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%B5%81%E9%87%8F-3"><span class="nav-number">5.</span> <span class="nav-text">日志流量-3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8F%96%E8%AF%81-1"><span class="nav-number">6.</span> <span class="nav-text">内存取证-1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8F%96%E8%AF%81-2"><span class="nav-number">7.</span> <span class="nav-text">内存取证-2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8F%96%E8%AF%81-3"><span class="nav-number">8.</span> <span class="nav-text">内存取证-3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8F%96%E8%AF%81-4"><span class="nav-number">9.</span> <span class="nav-text">内存取证-4</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8F%96%E8%AF%81-5"><span class="nav-number">10.</span> <span class="nav-text">内存取证-5</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%8F%96%E8%AF%81-6"><span class="nav-number">11.</span> <span class="nav-text">内存取证-6</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93-1"><span class="nav-number">12.</span> <span class="nav-text">数据库-1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93-2"><span class="nav-number">13.</span> <span class="nav-text">数据库-2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93-3"><span class="nav-number">14.</span> <span class="nav-text">数据库-3</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2024第一届Solar杯应急响应挑战赛-WriteUp | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2024第一届Solar杯应急响应挑战赛-WriteUp
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-12-28 18:00:00" itemprop="dateCreated datePublished" datetime="2024-12-28T18:00:00+00:00">2024-12-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/CTF%E7%9B%B8%E5%85%B3/" itemprop="url" rel="index"><span itemprop="name">CTF相关</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/CTF%E7%9B%B8%E5%85%B3/WriteUp/" itemprop="url" rel="index"><span itemprop="name">WriteUp</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>CTF是数据库4-5、逆向破解-1、综合应急-2未解出，然后理论是Windows的应急响应,就拿到了300,这个成绩和排名真的是非常的可惜。最终成绩是49名拿到了一个优秀奖。<br><img src="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20241228165801.png" alt="成绩-1"><br><img src="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20241228165633.png" alt="成绩-2"><br><img src="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20250103144907.png" alt="成绩-3"></p>
+<h1 id="签到"><a href="#签到" class="headerlink" title="签到"></a>签到</h1><p>本题作为签到题,请给出邮服发件顺序。  </p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Received: from mail.da4s8gag.com ([140.143.207.229])  </span><br><span class="line">by newxmmxszc6-1.qq.com (NewMX) with SMTP id 6010A8AD  </span><br><span class="line">for ; Thu, 17 Oct 2024 11:24:01 +0800  </span><br><span class="line">X-QQ-mid: xmmxszc6-1t1729135441tm9qrjq3k  </span><br><span class="line">X-QQ-XMRINFO: NgToQqU5s31XQ+vYT/V7+uk=  </span><br><span class="line">Authentication-Results: mx.qq.com; spf=none smtp.mailfrom=;  </span><br><span class="line">dkim=none; dmarc=none(permerror) header.from=solar.sec  </span><br><span class="line">Received: from mail.solar.sec (VM-20-3-centos [127.0.0.1])  </span><br><span class="line">by mail.da4s8gag.com (Postfix) with ESMTP id 2EF0A60264  </span><br><span class="line">for ; Thu, 17 Oct 2024 11:24:01 +0800 (CST)  </span><br><span class="line">Date: Thu, 17 Oct 2024 11:24:01 +0800  </span><br><span class="line">To: hellosolartest@qq.com  </span><br><span class="line">From: 鍏嬪競缃戜俊  </span><br><span class="line">Subject:xxxxxxxxxx  </span><br><span class="line">Message-Id: &lt;20241017112401.032146@mail.solar.sec&gt;  </span><br><span class="line">X-Mailer: QQMail 2.x</span><br></pre></td></tr></table></figure>
+<p>把邮箱地址挨个拿出来即可<br>flag{mail.solar.sec|mail.da4s8gag.com|newxmmxszc6-1.qq.com}</p>
+<h1 id="日志流量-1"><a href="#日志流量-1" class="headerlink" title="日志流量-1"></a>日志流量-1</h1><p>题目文件：tomcat-wireshark.zip&#x2F;web<br>新手运维小王的Geoserver遭到了攻击：<br>黑客疑似删除了webshell后门，小王找到了可能是攻击痕迹的文件但不一定是正确的，请帮他排查一下。<br>flag格式 flag{xxxx}<br>流量分析中发现b.jsp的流量最大，而且都是加密内容，这里直接反编译一下发现flag，反编译这里需要反编译的路径是在<code>apache-tomcat-9.0.96\work\Catalina\localhost\ROOT\org\apache\jsp</code>,根目录给的那俩是不能用的。<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228161147.png" alt="日志流量-1-1"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228161129.png" alt="日志流量-1-2"></p>
+<h1 id="日志流量-2"><a href="#日志流量-2" class="headerlink" title="日志流量-2"></a>日志流量-2</h1><p>题目文件：tomcat-wireshark.zip&#x2F;web<br>新手运维小王的Geoserver遭到了攻击：<br>小王拿到了当时被入侵时的流量，其中一个IP有访问webshell的流量，已提取部分放在了两个pcapng中了。请帮他解密该流量。<br>flag格式 flag{xxxx}<br>这段代码很清晰，是AES的加密，没指定加密模式应该是ECB,然后key是a2550eeab0724a69</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String code=<span class="string">&quot;ZiFsXmEqZ3tBN2I0X1g5ektfMnY4Tl93TDVxNH0=&quot;</span>; String xc=<span class="string">&quot;a2550eeab0724a69&quot;</span>; <span class="keyword">class</span> <span class="title class_">X</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span>&#123;<span class="keyword">public</span> <span class="title function_">X</span><span class="params">(ClassLoader z)</span>&#123;<span class="built_in">super</span>(z);&#125;<span class="keyword">public</span> Class <span class="title function_">Q</span><span class="params">(<span class="type">byte</span>[] cb)</span>&#123;<span class="keyword">return</span> <span class="built_in">super</span>.defineClass(cb, <span class="number">0</span>, cb.length);&#125; &#125;<span class="keyword">public</span> <span class="type">byte</span>[] x(<span class="type">byte</span>[] s,<span class="type">boolean</span> m)&#123; <span class="keyword">try</span>&#123;javax.crypto.Cipher c=javax.crypto.Cipher.getInstance(<span class="string">&quot;AES&quot;</span>);c.init(m?<span class="number">1</span>:<span class="number">2</span>,<span class="keyword">new</span> <span class="title class_">javax</span>.crypto.spec.SecretKeySpec(xc.getBytes(),<span class="string">&quot;AES&quot;</span>));<span class="keyword">return</span> c.doFinal(s); &#125;<span class="keyword">catch</span> (Exception e)&#123;<span class="keyword">return</span> <span class="literal">null</span>; &#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>挨个分析到流6<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228105457.png" alt="日志流量-2-1"><br>他执行的对应命令是<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228105530.png" alt="日志流量-2-2"><br>拿到的返回内容是<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228105504.png" alt="日志流量-2-3"></p>
+<h1 id="日志流量-3"><a href="#日志流量-3" class="headerlink" title="日志流量-3"></a>日志流量-3</h1><p>题目文件：tomcat-wireshark.zip&#x2F;web<br>新手运维小王的Geoserver遭到了攻击：<br>小王拿到了当时被入侵时的流量，黑客疑似通过webshell上传了文件，请看看里面是什么。<br>flag格式 flag{xxxx}<br>分析完2紧接着有个很大的流量，解密发现<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228105946.png" alt="日志流量-3-1"><br>他上传了一个pdf，我这里直接保存pdf然后改后缀打开拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228110008.png" alt="日志流量-3-2"></p>
+<h1 id="内存取证-1"><a href="#内存取证-1" class="headerlink" title="内存取证-1"></a>内存取证-1</h1><p>题目文件：SERVER-2008-20241220-162057<br>请找到rdp连接的跳板地址<br>flag格式 flag{1.1.1.1}<br>RDP是远程桌面，端口一般都是3389，直接分析网络即可。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile Win7SP1x64 netscan |findstr 3389</span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">0x7e300dc0         TCPv4    0.0.0.0:3389                   0.0.0.0:0            LISTENING        1908     svchost.exe</span><br><span class="line">0x7e303360         TCPv4    0.0.0.0:3389                   0.0.0.0:0            LISTENING        1908     svchost.exe</span><br><span class="line">0x7e303360         TCPv6    :::3389                        :::0                 LISTENING        1908     svchost.exe</span><br><span class="line">0x7decc010         TCPv4    192.168.60.150:3389            192.168.60.220:34121 ESTABLISHED      1908     svchost.exe</span><br></pre></td></tr></table></figure>
+<p>flag{192.168.60.220}</p>
+<h1 id="内存取证-2"><a href="#内存取证-2" class="headerlink" title="内存取证-2"></a>内存取证-2</h1><p>题目文件：SERVER-2008-20241220-162057<br>请找到攻击者下载黑客工具的IP地址<br>flag格式 flag{1.1.1.1}<br>我是通过网络的形式，通过下面命令拿到下面可疑信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile=Win7SP1x64 netscan</span><br><span class="line">...</span><br><span class="line">0x7de65cf0         TCPv4    -:49263                        155.94.204.67:85     CLOSED           504</span><br><span class="line">0x7de89540         TCPv4    192.168.60.150:445             192.168.60.169:46087 CLOSED           4        System</span><br><span class="line">0x7dec4480         TCPv4    192.168.60.150:49261           34.117.188.166:443   ESTABLISHED      2068     firefox.exe</span><br><span class="line">0x7decc010         TCPv4    192.168.60.150:3389            192.168.60.220:34121 ESTABLISHED      1908     svchost.exe</span><br><span class="line">0x7ded2ba0         TCPv4    192.168.60.150:49185           34.107.243.93:443    ESTABLISHED      2068     firefox.exe</span><br><span class="line">0x7df56cf0         TCPv4    192.168.60.150:49257           192.168.60.169:4444  ESTABLISHED      828      spoolsv.exe</span><br><span class="line">0x7e6ef400         TCPv4    -:0                            168.148.77.26:0      CLOSED           48       N</span><br></pre></td></tr></table></figure>
+<p>我去查询第一个的时候发现他是一个每过的ip，直接尝试提交，拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228113008.png" alt="内存取证-2-1"><br>flag{155.94.204.67}</p>
+<h1 id="内存取证-3"><a href="#内存取证-3" class="headerlink" title="内存取证-3"></a>内存取证-3</h1><p>题目文件：SERVER-2008-20241220-162057<br>攻击者获取的“FusionManager节点操作系统帐户（业务帐户）”的密码是什么<br>flag格式 flag{xxxx}<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228132602.png" alt="内存取证-3-1"><br>在这里发现一个pass.txt，判断大概率在这里。这里直接导出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile=Win7SP1x64 filescan |findstr pass.txt</span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">0x000000007e4cedd0     16      0 R--rw- \Device\HarddiskVolume2\Users\Administrator\Desktop\pass.txt</span><br><span class="line">0x000000007e4ec900      2      0 RW-rw- \Device\HarddiskVolume2\Users\Administrator\AppData\Roaming\Microsoft\Windows\Recent\pass.txt.lnk</span><br><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile=Win7SP1x64 dumpfiles -Q 0x000000007e4cedd0 -D ./</span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">DataSectionObject 0x7e4cedd0   None   \Device\HarddiskVolume2\Users\Administrator\Desktop\pass.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228132844.png" alt="内存出征-3-2"><br>flag{GalaxManager_2012}</p>
+<h1 id="内存取证-4"><a href="#内存取证-4" class="headerlink" title="内存取证-4"></a>内存取证-4</h1><p>题目文件：SERVER-2008-20241220-162057<br>请找到攻击者创建的用户<br>flag格式 flag{xxxx}<br>直接列出所有用户，我尝试Testuser发现错误，Administrator和Guest是系统自带的，ASP.NET似乎是微软的一个后端框架，尝试这个成功。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile Win7SP1x64  printkey -K <span class="string">&quot;SAM\Domains\Account\Users\Names&quot;</span></span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">Legend: (S) = Stable   (V) = Volatile</span><br><span class="line"></span><br><span class="line">----------------------------</span><br><span class="line">Registry: \SystemRoot\System32\Config\SAM</span><br><span class="line">Key name: Names (S)</span><br><span class="line">Last updated: 2024-12-20 16:14:42 UTC+0000</span><br><span class="line"></span><br><span class="line">Subkeys:</span><br><span class="line">  (S) Administrator</span><br><span class="line">  (S) ASP.NET</span><br><span class="line">  (S) Guest</span><br><span class="line">  (S) Testuser</span><br><span class="line"></span><br><span class="line">Values:</span><br><span class="line">REG_DWORD                     : (S) 0</span><br></pre></td></tr></table></figure>
+<h1 id="内存取证-5"><a href="#内存取证-5" class="headerlink" title="内存取证-5"></a>内存取证-5</h1><p>题目文件：SERVER-2008-20241220-162057<br>请找到攻击者利用跳板rdp登录的时间<br>flag格式 flag{2024&#x2F;01&#x2F;01 00:00:00}</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile Win7SP1x64 pslist|findstr rdp</span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">0xfffffa801b046b30 rdpclip.exe            3896   1908      8      153      2      0 2024-12-20 16:15:34 UTC+0000</span><br><span class="line">E:\TEMP&gt;</span><br></pre></td></tr></table></figure>
+<p>一直提交这个一直错误，一想他是UTC，尝试提交国内时区的即可成功<br><code>flag&#123;2024/12/21 00:15:34&#125;</code></p>
+<h1 id="内存取证-6"><a href="#内存取证-6" class="headerlink" title="内存取证-6"></a>内存取证-6</h1><p>题目文件：SERVER-2008-20241220-162057<br>请找到攻击者创建的用户的密码哈希值<br>flag格式 flag{XXXX}<br>根据取证4直接看hash</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile Win7SP1x64  printkey -K <span class="string">&quot;SAM\Domains\Account\Users\Names&quot;</span></span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">Legend: (S) = Stable   (V) = Volatile</span><br><span class="line"></span><br><span class="line">----------------------------</span><br><span class="line">Registry: \SystemRoot\System32\Config\SAM</span><br><span class="line">Key name: Names (S)</span><br><span class="line">Last updated: 2024-12-20 16:14:42 UTC+0000</span><br><span class="line"></span><br><span class="line">Subkeys:</span><br><span class="line">  (S) Administrator</span><br><span class="line">  (S) ASP.NET</span><br><span class="line">  (S) Guest</span><br><span class="line">  (S) Testuser</span><br><span class="line"></span><br><span class="line">Values:</span><br><span class="line">REG_DWORD                     : (S) 0</span><br><span class="line"></span><br><span class="line">E:\TEMP&gt;volatility -f SERVER-2008-20241220-162057.raw --profile Win7SP1x64  hashdump</span><br><span class="line">Volatility Foundation Volatility Framework 2.6</span><br><span class="line">Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::</span><br><span class="line">Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::</span><br><span class="line">Testuser:1000:aad3b435b51404eeaad3b435b51404ee:4bdcecfc666b002ea5aab1df8f08a9a2:::</span><br><span class="line">ASP.NET:1001:aad3b435b51404eeaad3b435b51404ee:5ffe97489cbec1e08d0c6339ec39416d:::</span><br></pre></td></tr></table></figure>
+<p>flag{5ffe97489cbec1e08d0c6339ec39416d}</p>
+<h1 id="数据库-1"><a href="#数据库-1" class="headerlink" title="数据库-1"></a>数据库-1</h1><p>题目附件：mssql、mssql题-备份数据库<br>请找到攻击者创建隐藏账户的时间<br>flag格式 如 flag{2024&#x2F;01&#x2F;01 00:00:00}<br>虚机没提供密码，可以参考这篇<a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_73927535/article/details/140837327">文章</a>来直接进入虚机<br>通过动态取证的方式，进入虚拟机，在登陆的时候发现有个test$用户可以选择，一看就是个后门用户，这里通过命令拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228125352.png" alt="数据库-1-1"><br>flag{2024&#x2F;12&#x2F;16 15:24:21}</p>
+<h1 id="数据库-2"><a href="#数据库-2" class="headerlink" title="数据库-2"></a>数据库-2</h1><p>题目附件：mssql、mssql题-备份数据库<br>请找到恶意文件的名称<br>flag格式 如 flag{<em>.</em>}<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228125523.png" alt="数据库-2-1"><br>一眼矿<br>flag{xmrig.exe}</p>
+<h1 id="数据库-3"><a href="#数据库-3" class="headerlink" title="数据库-3"></a>数据库-3</h1><p>题目附件：mssql、mssql题-备份数据库<br>请找到恶意文件的外联地址<br>flag格式 如 flag{1.1.1.1}<br>火绒剑直接梭<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020241228125909.png" alt="数据库-3-1"><br>flag{203.107.45.167}</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+              <a href="/tags/WriteUp/" rel="tag"># WriteUp</a>
+              <a href="/tags/WEB/" rel="tag"># WEB</a>
+              <a href="/tags/CRYPTO/" rel="tag"># CRYPTO</a>
+              <a href="/tags/Forensics/" rel="tag"># Forensics</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/12/27/KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86/" rel="prev" title="KVM-虚拟机管理">
+                  <i class="fa fa-angle-left"></i> KVM-虚拟机管理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/04/OpenStack-Stein%E7%89%88%E6%90%AD%E5%BB%BA-1%E6%8E%A7%E5%88%B61%E8%AE%A1%E7%AE%97/" rel="next" title="OpenStack-Stein版搭建-1控制1计算">
+                  OpenStack-Stein版搭建-1控制1计算 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2024/12/28/2024%E7%AC%AC%E4%B8%80%E5%B1%8ASolar%E6%9D%AF%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

